@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+
       - name: Run ESLint
         run: pnpm run lint
 
@@ -48,6 +51,17 @@ jobs:
 
       - name: Test Build Next.js
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+          # Supabase
+          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock-anon-key"
+          # PostgreSQL Database (Prisma)
+          DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock?pgbouncer=true"
+          DIRECT_URL: "postgresql://mock:mock@localhost:5432/mock"
+          # Clerk Auth & Navigation
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_mock"
+          CLERK_SECRET_KEY: "sk_test_mock"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          # Google Gemini AI
+          GOOGLE_GENERATIVE_AI_API_KEY: "mock-gemini-api-key"
         run: pnpm run build
