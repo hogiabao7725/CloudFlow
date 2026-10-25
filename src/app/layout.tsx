@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/ui/themes";
 import { Navbar } from "@/components/navbar";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <body className="min-h-full flex flex-col bg-background text-foreground">
           <Navbar />
           <main className="flex flex-1 flex-col">{children}</main>
+          <Toaster theme="dark" position="bottom-right" richColors />
         </body>
       </html>
     </ClerkProvider>
