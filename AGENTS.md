@@ -39,3 +39,14 @@ Common types:
 - `test`: Adding or updating tests (unit, smoke, integration)
 - `refactor`: Code refactoring that neither fixes a bug nor adds a feature
 - `style`: Formatting, missing semi-colons, lint fixes (no code logic change)
+
+## UI Design & Skill-First Protocol
+
+1. **Always Read Skills Before Building UI:**
+   - Before designing, restructuring, or refining any UI (`src/app/`, `src/components/`), the agent MUST read and apply the principles from `.agents/skills/design-taste-frontend/SKILL.md` and `references/app-screens.md`.
+2. **Anti-Slop House Standards:**
+   - No generic centered 3-card templates with icons in colored circles.
+   - No gratuitous shadows (`shadow-2xl`), floating blurry cards, or redundant hairline dividers.
+   - Enforce brand colors (Dark Monochrome & Graphite: Solid White primary `#FFFFFF`, matte charcoal `#09090B` background, `#18181C` cards, `#2E2E36` borders; Dark theme is the exclusive sole theme).
+   - Use authentic product language and real preview fragments instead of lorem/generic placeholders.
+
