@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { syncUser } from "@/data/user";
 import { getWorkspaceById } from "@/actions/workspace";
@@ -7,9 +7,6 @@ import {
   ArrowLeft,
   Network,
   FileText,
-  Workflow,
-  Sparkles,
-  ShieldCheck,
 } from "lucide-react";
 
 interface WorkspaceRoomPageProps {

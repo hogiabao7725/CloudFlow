@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { WorkspaceStatus } from "@prisma/client";
@@ -12,10 +12,8 @@ import {
   List,
   Clock,
   ArrowUpRight,
-  Filter,
   CheckCircle2,
   Workflow,
-  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -25,6 +23,16 @@ import { KanbanColumn } from "./kanban-column";
 import { CreateWorkspaceModal } from "./create-workspace-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const emptySubscribe = () => () => {};
+
+function useMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
 
 interface KanbanBoardProps {
   initialWorkspaces: WorkspaceItem[];
@@ -67,20 +75,18 @@ export function KanbanBoard({
   initialWorkspaces,
   clerkOrgId,
 }: KanbanBoardProps) {
+  const isMounted = useMounted();
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>(initialWorkspaces);
+  const [prevInitial, setPrevInitial] = useState(initialWorkspaces);
+  if (prevInitial !== initialWorkspaces) {
+    setPrevInitial(initialWorkspaces);
+    setWorkspaces(initialWorkspaces);
+  }
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"board" | "list">("board");
   const [modalOpen, setModalOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    setWorkspaces(initialWorkspaces);
-  }, [initialWorkspaces]);
 
   // Real-time metrics
   const metrics = useMemo(() => {
