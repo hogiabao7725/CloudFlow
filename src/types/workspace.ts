@@ -15,7 +15,10 @@ export interface WorkspaceItem {
   position: number;
   clerkOrgId: string | null;
   creatorId: string;
+  shareToken?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   creator?: WorkspaceCreator | null;
+  doc?: { id: string } | null;
+  canvas?: { id: string } | null;
 }

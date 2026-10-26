@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Draggable } from "@hello-pangea/dnd";
 import { MoreVertical, Trash2, Edit2, Network, FileText, ArrowUpRight } from "lucide-react";
@@ -32,6 +32,7 @@ export function WorkspaceCard({
   onDeleted,
   onUpdated,
 }: WorkspaceCardProps) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -41,6 +42,18 @@ export function WorkspaceCard({
   const creatorName = workspace.creator?.name || workspace.creator?.email?.split("@")[0] || "Architect";
   const avatarLetter = (workspace.creator?.name?.[0] || workspace.creator?.email?.[0] || "A").toUpperCase();
   const timeAgo = formatDistanceToNow(new Date(workspace.updatedAt), { addSuffix: true });
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking inside the actions dropdown menu
+    if ((e.target as HTMLElement).closest('[data-prevent-card-click="true"]')) {
+      return;
+    }
+    if (e.metaKey || e.ctrlKey) {
+      window.open(`/workspaces/${workspace.id}`, "_blank");
+      return;
+    }
+    router.push(`/workspaces/${workspace.id}`);
+  };
 
   const handleRename = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +102,8 @@ export function WorkspaceCard({
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className={`group relative flex flex-col justify-between h-[200px] min-h-[200px] max-h-[200px] w-full shrink-0 rounded-2xl border p-5 transition-all duration-200 select-none ${
+            onClick={handleCardClick}
+            className={`group relative flex flex-col justify-between h-[200px] min-h-[200px] max-h-[200px] w-full shrink-0 rounded-2xl border p-5 transition-all duration-200 select-none cursor-pointer ${
               snapshot.isDragging
                 ? "border-foreground/80 bg-card shadow-2xl shadow-black/70 scale-[1.03] z-50 ring-2 ring-foreground/20"
                 : "border-border/80 bg-card hover:border-foreground/40 hover:bg-card hover:shadow-lg hover:shadow-black/20"
@@ -98,21 +112,23 @@ export function WorkspaceCard({
             {/* 1. Header: Title & Action Menu (Strictly Fixed Dimensions) */}
             <div className="w-full shrink-0">
               <div className="flex items-center justify-between gap-2 min-w-0 h-7">
-                <Link
-                  href={`/workspaces/${workspace.id}`}
+                <div
                   title={workspace.name}
                   className="flex items-center gap-1.5 min-w-0 flex-1 group/title"
                 >
-                  <span className="truncate text-base font-bold text-foreground tracking-tight hover:text-primary transition-colors">
+                  <span className="truncate text-base font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
                     {workspace.name}
                   </span>
-                  <ArrowUpRight className="size-4 opacity-0 transition-opacity group-hover/title:opacity-100 text-muted-foreground shrink-0" />
-                </Link>
+                  <ArrowUpRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground shrink-0" />
+                </div>
 
-                <div className="relative shrink-0">
+                <div className="relative shrink-0" data-prevent-card-click="true">
                   <button
                     type="button"
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(!menuOpen);
+                    }}
                     aria-label="Workspace actions"
                     className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                   >
@@ -123,12 +139,19 @@ export function WorkspaceCard({
                     <>
                       <div
                         className="fixed inset-0 z-40"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpen(false);
+                        }}
                       />
-                      <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg border border-border bg-card p-1 shadow-lg shadow-black/30 text-xs">
+                      <div
+                        className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg border border-border bg-card p-1 shadow-lg shadow-black/30 text-xs"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setMenuOpen(false);
                             setRenameOpen(true);
                           }}
@@ -139,7 +162,8 @@ export function WorkspaceCard({
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setMenuOpen(false);
                             setDeleteOpen(true);
                           }}
