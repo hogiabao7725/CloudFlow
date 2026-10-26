@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { syncUser } from "@/data/user";
 import { getWorkspaces } from "@/actions/workspace";
-import { KanbanBoard } from "@/components/workspaces/kanban-board";
+import { KanbanBoard } from "@/components/dashboard/kanban-board";
 import { WorkspaceItem } from "@/types/workspace";
 
 export const metadata = {
