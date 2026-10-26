@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import {
   Show,
   SignInButton,
@@ -20,34 +21,36 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-8">
-      {/* Brand logo */}
+      {/* Brand logo (Pure Minimalist Wordmark) */}
       <Link
         href={isSignedIn && !isLandingPage ? "/dashboard" : "/"}
-        className="flex items-center gap-2.5 font-semibold text-base tracking-tight transition-colors hover:text-primary"
+        className="flex items-center text-lg font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
       >
-        <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-          CF
-        </div>
-        <span className="flex items-center gap-1 font-bold text-base text-foreground">
+        <span>
           Cloud<span className="text-foreground/70">Flow</span>
         </span>
       </Link>
 
-      {/* Auth & Navigation actions */}
+      {/* Auth & Navigation actions (Prominent Primary CTAs) */}
       <div className="flex items-center gap-3">
         {/* Signed Out */}
         <Show when="signed-out">
           <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
             <Button
               variant="outline"
-              size="sm"
-              className="border-border bg-card/60 hover:bg-card text-foreground"
+              size="default"
+              className="h-9.5 px-4 text-sm font-semibold border-border bg-card/60 hover:bg-card text-foreground"
             >
               Sign in
             </Button>
           </SignInButton>
           <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-            <Button size="sm">Start workspace</Button>
+            <Button
+              size="default"
+              className="h-9.5 px-5 text-sm font-semibold shadow-sm"
+            >
+              Start workspace <ArrowRight className="size-4 ml-1" />
+            </Button>
           </SignUpButton>
         </Show>
 
@@ -63,8 +66,10 @@ export function Navbar() {
             }}
           />
           {isLandingPage && (
-            <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard">Dashboard</Link>
+            <Button asChild size="default" className="h-9.5 px-5 text-sm font-semibold shadow-sm">
+              <Link href="/dashboard">
+                Dashboard <ArrowRight className="size-4 ml-1" />
+              </Link>
             </Button>
           )}
           <UserButton
