@@ -1,9 +1,14 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { getUserByClerkId, syncUser } from "@/data/user";
+import { getAuthenticatedUser } from "./user";
+import {
+  CreateWorkspaceSchema,
+  UpdateWorkspaceSchema,
+  UpdateStatusSchema,
+  type CreateWorkspaceInput,
+  type UpdateWorkspaceInput,
+} from "@/lib/validations/workspace";
 import {
   findWorkspaceById,
   findWorkspaces,
@@ -13,37 +18,6 @@ import {
   deleteWorkspaceById,
 } from "@/data/workspace";
 import { WorkspaceStatus } from "@prisma/client";
-
-// Input validation schemas
-const CreateWorkspaceSchema = z.object({
-  name: z.string().trim().min(1, "Workspace name is required").max(100, "Name must be under 100 characters"),
-  description: z.string().trim().max(500, "Description must be under 500 characters").optional(),
-  clerkOrgId: z.string().nullable().optional(),
-});
-
-const UpdateWorkspaceSchema = z.object({
-  name: z.string().trim().min(1, "Workspace name is required").max(100, "Name must be under 100 characters").optional(),
-  description: z.string().trim().max(500, "Description must be under 500 characters").nullable().optional(),
-});
-
-const UpdateStatusSchema = z.object({
-  status: z.nativeEnum(WorkspaceStatus),
-  position: z.number().optional(),
-});
-
-// Helper to authenticate caller and ensure user record is synchronized
-async function getAuthenticatedUser() {
-  const { userId, orgId } = await auth();
-  if (!userId) return null;
-
-  let user = await getUserByClerkId(userId);
-  if (!user) {
-    user = await syncUser();
-  }
-  if (!user) return null;
-
-  return { user, userId, orgId };
-}
 
 // Check if user has read/write permissions on the given workspace
 function canAccessWorkspace(
@@ -60,11 +34,7 @@ function canAccessWorkspace(
 /**
  * Creates a new workspace with initialized 1-to-1 Doc and Canvas containers.
  */
-export async function createWorkspace(input: {
-  name: string;
-  description?: string;
-  clerkOrgId?: string | null;
-}) {
+export async function createWorkspace(input: CreateWorkspaceInput) {
   const validation = CreateWorkspaceSchema.safeParse(input);
   if (!validation.success) {
     return {
@@ -223,7 +193,7 @@ export async function updateWorkspaceStatus(
  */
 export async function updateWorkspace(
   id: string,
-  data: { name?: string; description?: string | null }
+  data: UpdateWorkspaceInput
 ) {
   const validation = UpdateWorkspaceSchema.safeParse(data);
   if (!validation.success) {

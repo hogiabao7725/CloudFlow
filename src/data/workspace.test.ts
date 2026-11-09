@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      aggregate: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -86,21 +87,24 @@ describe("Workspace Data Access Layer", () => {
 
   describe("getHighestPosition", () => {
     it("should return the highest position in a given status column", async () => {
-      vi.mocked(prisma.workspace.findFirst).mockResolvedValue({ position: 2500 } as never);
+      vi.mocked(prisma.workspace.aggregate).mockResolvedValue({
+        _max: { position: 2500 },
+      } as never);
 
       const result = await getHighestPosition(WorkspaceStatus.PLANNING, {
         userId: "user_123",
       });
       expect(result).toBe(2500);
-      expect(prisma.workspace.findFirst).toHaveBeenCalledWith({
+      expect(prisma.workspace.aggregate).toHaveBeenCalledWith({
         where: { creatorId: "user_123", clerkOrgId: null, status: WorkspaceStatus.PLANNING },
-        orderBy: { position: "desc" },
-        select: { position: true },
+        _max: { position: true },
       });
     });
 
     it("should return 0 when no workspaces exist in the column", async () => {
-      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.workspace.aggregate).mockResolvedValue({
+        _max: { position: null },
+      } as never);
 
       const result = await getHighestPosition(WorkspaceStatus.PLANNING, {
         orgId: "org_empty",

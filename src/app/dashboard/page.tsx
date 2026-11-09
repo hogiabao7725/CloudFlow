@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { syncUser } from "@/data/user";
 import { getWorkspaces } from "@/actions/workspace";
 import { KanbanBoard } from "@/components/dashboard/kanban-board";
-import { WorkspaceItem } from "@/types/workspace";
 
 export const metadata = {
   title: "Dashboard | CloudFlow",
@@ -28,21 +27,22 @@ export default async function DashboardPage() {
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
             <span>{displayName}&apos;s Workspace</span>
             <span>/</span>
-            <span className="text-foreground font-semibold">Personal Scope</span>
+            <span className="text-foreground font-semibold">
+              Personal Scope
+            </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Architecture Initiatives
           </h1>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Organize, track, and collaborate on system architecture workspaces from concept to delivery.
+            Organize, track, and collaborate on system architecture workspaces
+            from concept to delivery.
           </p>
         </div>
       </div>
 
       {/* Main Kanban Board Interface */}
-      <KanbanBoard
-        initialWorkspaces={workspaces as unknown as WorkspaceItem[]}
-      />
+      <KanbanBoard initialWorkspaces={workspaces} />
     </div>
   );
 }
