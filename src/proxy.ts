@@ -1,13 +1,14 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/workspaces(.*)",
-]);
+const PROTECTED_ROUTES = ["/dashboard", "/workspaces"];
 
 // Protect private routes at the Edge layer before Server Components execute.
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    req.nextUrl.pathname.startsWith(route),
+  );
+
+  if (isProtected) {
     await auth.protect();
   }
 });

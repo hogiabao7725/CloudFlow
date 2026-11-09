@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { useKanban } from "./use-kanban";
+import { useKanban } from "@/hooks/use-kanban";
 import { WorkspaceStatus } from "@prisma/client";
 import { WorkspaceItem } from "@/types/workspace";
 import {

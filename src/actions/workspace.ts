@@ -8,7 +8,7 @@ import {
   UpdateStatusSchema,
   type CreateWorkspaceInput,
   type UpdateWorkspaceInput,
-} from "@/lib/validations/workspace";
+} from "@/validators/workspace";
 import {
   findWorkspaceById,
   findWorkspaces,

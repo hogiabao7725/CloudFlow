@@ -11,7 +11,7 @@ import {
   OrganizationSwitcher,
   useAuth,
 } from "@clerk/nextjs";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 // Top navigation bar shared across routes, providing identity and organization management.
 export function Navbar() {

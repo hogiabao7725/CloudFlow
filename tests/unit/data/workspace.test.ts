@@ -6,7 +6,7 @@ import {
   insertWorkspace,
   updateWorkspaceData,
   deleteWorkspaceById,
-} from "./workspace";
+} from "@/data/workspace";
 import { prisma } from "@/lib/prisma";
 import { WorkspaceStatus } from "@prisma/client";
 

@@ -3,7 +3,7 @@ import {
   CreateWorkspaceSchema,
   UpdateWorkspaceSchema,
   UpdateStatusSchema,
-} from "./workspace";
+} from "@/validators/workspace";
 import { WorkspaceStatus } from "@prisma/client";
 
 describe("Workspace Validation Schemas", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getUserByClerkId, syncUser, checkUser } from "./user";
+import { getUserByClerkId, syncUser, checkUser } from "@/data/user";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 

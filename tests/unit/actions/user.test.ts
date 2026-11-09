@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getAuthenticatedUser } from "./user";
+import { getAuthenticatedUser } from "@/actions/user";
 import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId, syncUser } from "@/data/user";
 

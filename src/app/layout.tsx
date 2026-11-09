@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/ui/themes";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/common/navbar";
 import { Toaster } from "sonner";
 import "./globals.css";
 
