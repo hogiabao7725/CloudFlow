@@ -10,10 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project Testing Conventions
 
-1. **Colocated Unit Tests:**
-   - All unit tests MUST be colocated directly next to their source files.
-   - Example: `src/lib/auth.ts` -> `src/lib/auth.test.ts`, `src/components/Button.tsx` -> `src/components/Button.test.tsx`.
-   - Do NOT place unit tests in a centralized root `__tests__/` folder.
+1. **Centralized Unit Tests:**
+   - All unit tests live in dedicated subdirectories under `tests/unit/`, mirroring the `src/` directory layout.
+   - Example: `src/actions/workspace.ts` -> `tests/unit/actions/workspace.test.ts`, `src/validators/workspace.ts` -> `tests/unit/validators/workspace.test.ts`.
+   - Do NOT place unit tests interleaved directly inside the `src/` directory to keep `src/` purely focused on production code.
 
 2. **Smoke, Integration & E2E Tests:**
    - System-wide tests live in organized subdirectories under the root `tests/` directory:

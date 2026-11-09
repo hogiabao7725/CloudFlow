@@ -6,7 +6,7 @@ import {
   updateWorkspaceStatus,
   updateWorkspace,
   deleteWorkspace,
-} from "./workspace";
+} from "@/actions/workspace";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getUserByClerkId } from "@/data/user";

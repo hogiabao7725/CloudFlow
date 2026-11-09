@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 
 describe("Prisma Client Singleton", () => {
   it("should export a valid prisma client instance", () => {

@@ -62,8 +62,8 @@ model Doc {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
-// Real-time infinite whiteboard canvas surface
-// Stores tldraw shapes, arrows, and ERD entities
+// Real-time architecture diagramming and whiteboard canvas surface
+// Stores architecture diagram entities, flowchart nodes, and ERD schemas
 model Canvas {
   id          String   @id @default(cuid())
   workspaceId String   @unique

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import proxy, { config } from "./proxy";
+import proxy, { config } from "@/proxy";
 
 describe("Proxy Configuration", () => {
   it("should export a valid proxy handler", () => {

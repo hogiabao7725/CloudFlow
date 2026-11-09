@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/ui/themes";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/common/navbar";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -29,10 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         theme: dark,
         variables: {
           colorPrimary: "#ffffff",
-          colorBackground: "#232632",
-          colorForeground: "#eef0f6",
-          colorInput: "#1a1c25",
-          colorInputForeground: "#eef0f6",
+          colorBackground: "#18181C",
+          colorForeground: "#ededed",
+          colorInput: "#09090B",
+          colorInputForeground: "#ededed",
         },
       }}
     >

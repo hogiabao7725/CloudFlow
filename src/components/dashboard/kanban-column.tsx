@@ -11,8 +11,8 @@ interface KanbanColumnProps {
   description: string;
   dotColor: string;
   workspaces: WorkspaceItem[];
-  onDeleted?: (id: string) => void;
-  onUpdated?: (workspace: WorkspaceItem) => void;
+  onRename?: (workspace: WorkspaceItem) => void;
+  onDelete?: (workspace: WorkspaceItem) => void;
 }
 
 export function KanbanColumn({
@@ -21,11 +21,11 @@ export function KanbanColumn({
   description,
   dotColor,
   workspaces,
-  onDeleted,
-  onUpdated,
+  onRename,
+  onDelete,
 }: KanbanColumnProps) {
   return (
-    <div className="flex flex-col rounded-2xl border border-border/80 bg-card/40 p-4 min-w-[300px] w-full flex-1">
+    <div className="flex flex-col rounded-2xl border border-border/80 bg-card/40 p-4 min-w-75 w-full flex-1">
       {/* Column Header */}
       <div className="mb-4 px-1 pt-1">
         <div className="flex items-center justify-between">
@@ -46,7 +46,7 @@ export function KanbanColumn({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex flex-col gap-3 flex-1 min-h-[380px] rounded-xl p-1 transition-colors duration-200 ${
+            className={`flex flex-col gap-3 flex-1 min-h-95 rounded-xl p-1 transition-colors duration-200 ${
               snapshot.isDraggingOver ? "bg-secondary/40 ring-1 ring-foreground/10" : ""
             }`}
           >
@@ -55,8 +55,8 @@ export function KanbanColumn({
                 key={workspace.id}
                 workspace={workspace}
                 index={index}
-                onDeleted={onDeleted}
-                onUpdated={onUpdated}
+                onRename={onRename}
+                onDelete={onDelete}
               />
             ))}
             {provided.placeholder}

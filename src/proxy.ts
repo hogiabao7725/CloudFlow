@@ -1,8 +1,17 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// Synchronize Clerk auth context across all incoming requests.
-// Protection is enforced via resource-based checks in pages and server actions.
-export default clerkMiddleware();
+const PROTECTED_ROUTES = ["/dashboard", "/workspaces"];
+
+// Protect private routes at the Edge layer before Server Components execute.
+export default clerkMiddleware(async (auth, req) => {
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    req.nextUrl.pathname.startsWith(route),
+  );
+
+  if (isProtected) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [
