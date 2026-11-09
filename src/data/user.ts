@@ -1,42 +1,37 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { User } from "@prisma/client";
 
-// Finds a user by their Clerk ID.
-export async function getUserByClerkId(clerkId: string) {
+// Finds a user record by their Clerk ID.
+export async function getUserByClerkId(clerkId: string): Promise<User | null> {
   return prisma.user.findUnique({
     where: { clerkId },
   });
 }
 
-// Persists a new user record
-export async function createUser(data: {
-  clerkId: string;
-  email: string;
-  name?: string | null;
-  imageUrl?: string | null;
-}) {
-  return prisma.user.create({ data });
-}
-
-// Synchronizes the authenticated Clerk user into the database on first access.
-export async function syncUser() {
+export async function syncUser(): Promise<User | null> {
   const clerkUser = await currentUser();
-  if (!clerkUser) return null;
+  const email = clerkUser?.emailAddresses[0]?.emailAddress;
 
-  const existing = await getUserByClerkId(clerkUser.id);
-  if (existing) return existing;
+  if (!clerkUser || !email) return null;
 
-  const email = clerkUser.emailAddresses[0]?.emailAddress;
-  if (!email) return null;
+  const name =
+    `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null;
 
-  return createUser({
-    clerkId: clerkUser.id,
-    email,
-    name:
-      `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null,
-    imageUrl: clerkUser.imageUrl,
+  return prisma.user.upsert({
+    where: { clerkId: clerkUser.id },
+    update: {
+      name,
+      imageUrl: clerkUser.imageUrl,
+      email,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email,
+      name,
+      imageUrl: clerkUser.imageUrl,
+    },
   });
 }
 
-// Alias for backwards compatibility.
 export const checkUser = syncUser;

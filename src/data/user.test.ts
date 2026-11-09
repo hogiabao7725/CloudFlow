@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getUserByClerkId, createUser, syncUser, checkUser } from "./user";
+import { getUserByClerkId, syncUser, checkUser } from "./user";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
@@ -11,7 +11,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
-      create: vi.fn(),
+      upsert: vi.fn(),
     },
   },
 }));
@@ -41,23 +41,6 @@ describe("User Data Access Layer", () => {
     });
   });
 
-  describe("createUser", () => {
-    it("should insert a new user record with provided fields", async () => {
-      const input = {
-        clerkId: "clerk_new",
-        email: "new@example.com",
-        name: "New User",
-        imageUrl: "https://example.com/pic.png",
-      };
-      const mockCreated = { id: "user_new", ...input, createdAt: new Date(), updatedAt: new Date() };
-      vi.mocked(prisma.user.create).mockResolvedValue(mockCreated as never);
-
-      const result = await createUser(input);
-      expect(result).toEqual(mockCreated);
-      expect(prisma.user.create).toHaveBeenCalledWith({ data: input });
-    });
-  });
-
   describe("syncUser (and checkUser alias)", () => {
     it("should alias checkUser to syncUser", () => {
       expect(checkUser).toBe(syncUser);
@@ -68,63 +51,7 @@ describe("User Data Access Layer", () => {
 
       const result = await syncUser();
       expect(result).toBeNull();
-      expect(prisma.user.findUnique).not.toHaveBeenCalled();
-    });
-
-    it("should return existing user without creating a new record", async () => {
-      const mockClerkUser = {
-        id: "clerk_123",
-        emailAddresses: [{ emailAddress: "existing@example.com" }],
-        firstName: "Existing",
-        lastName: "User",
-        imageUrl: null,
-      };
-      const mockDbUser = {
-        id: "db_1",
-        clerkId: "clerk_123",
-        email: "existing@example.com",
-        name: "Existing User",
-        imageUrl: null,
-      };
-
-      vi.mocked(currentUser).mockResolvedValue(mockClerkUser as never);
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockDbUser as never);
-
-      const result = await syncUser();
-      expect(result).toEqual(mockDbUser);
-      expect(prisma.user.create).not.toHaveBeenCalled();
-    });
-
-    it("should create new user record if user is not in database", async () => {
-      const mockClerkUser = {
-        id: "clerk_456",
-        emailAddresses: [{ emailAddress: "brand_new@example.com" }],
-        firstName: "Brand",
-        lastName: "New",
-        imageUrl: "https://example.com/avatar.png",
-      };
-      const mockCreated = {
-        id: "db_2",
-        clerkId: "clerk_456",
-        email: "brand_new@example.com",
-        name: "Brand New",
-        imageUrl: "https://example.com/avatar.png",
-      };
-
-      vi.mocked(currentUser).mockResolvedValue(mockClerkUser as never);
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue(mockCreated as never);
-
-      const result = await syncUser();
-      expect(result).toEqual(mockCreated);
-      expect(prisma.user.create).toHaveBeenCalledWith({
-        data: {
-          clerkId: "clerk_456",
-          email: "brand_new@example.com",
-          name: "Brand New",
-          imageUrl: "https://example.com/avatar.png",
-        },
-      });
+      expect(prisma.user.upsert).not.toHaveBeenCalled();
     });
 
     it("should return null if Clerk user has no email addresses", async () => {
@@ -137,11 +64,88 @@ describe("User Data Access Layer", () => {
       };
 
       vi.mocked(currentUser).mockResolvedValue(mockClerkUser as never);
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
       const result = await syncUser();
       expect(result).toBeNull();
-      expect(prisma.user.create).not.toHaveBeenCalled();
+      expect(prisma.user.upsert).not.toHaveBeenCalled();
+    });
+
+    it("should upsert user record when authenticated with email", async () => {
+      const mockClerkUser = {
+        id: "clerk_456",
+        emailAddresses: [{ emailAddress: "alice@example.com" }],
+        firstName: "Alice",
+        lastName: "Smith",
+        imageUrl: "https://example.com/alice.png",
+      };
+      const mockUpserted = {
+        id: "db_user_1",
+        clerkId: "clerk_456",
+        email: "alice@example.com",
+        name: "Alice Smith",
+        imageUrl: "https://example.com/alice.png",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(currentUser).mockResolvedValue(mockClerkUser as never);
+      vi.mocked(prisma.user.upsert).mockResolvedValue(mockUpserted as never);
+
+      const result = await syncUser();
+      expect(result).toEqual(mockUpserted);
+      expect(prisma.user.upsert).toHaveBeenCalledWith({
+        where: { clerkId: "clerk_456" },
+        update: {
+          name: "Alice Smith",
+          imageUrl: "https://example.com/alice.png",
+          email: "alice@example.com",
+        },
+        create: {
+          clerkId: "clerk_456",
+          email: "alice@example.com",
+          name: "Alice Smith",
+          imageUrl: "https://example.com/alice.png",
+        },
+      });
+    });
+
+    it("should fallback to null for name if both firstName and lastName are missing", async () => {
+      const mockClerkUser = {
+        id: "clerk_999",
+        emailAddresses: [{ emailAddress: "anonymous@example.com" }],
+        firstName: null,
+        lastName: null,
+        imageUrl: null,
+      };
+      const mockUpserted = {
+        id: "db_user_2",
+        clerkId: "clerk_999",
+        email: "anonymous@example.com",
+        name: null,
+        imageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(currentUser).mockResolvedValue(mockClerkUser as never);
+      vi.mocked(prisma.user.upsert).mockResolvedValue(mockUpserted as never);
+
+      const result = await syncUser();
+      expect(result).toEqual(mockUpserted);
+      expect(prisma.user.upsert).toHaveBeenCalledWith({
+        where: { clerkId: "clerk_999" },
+        update: {
+          name: null,
+          imageUrl: null,
+          email: "anonymous@example.com",
+        },
+        create: {
+          clerkId: "clerk_999",
+          email: "anonymous@example.com",
+          name: null,
+          imageUrl: null,
+        },
+      });
     });
   });
 });
