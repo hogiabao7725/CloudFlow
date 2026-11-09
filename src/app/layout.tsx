@@ -29,10 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         theme: dark,
         variables: {
           colorPrimary: "#ffffff",
-          colorBackground: "#232632",
-          colorForeground: "#eef0f6",
-          colorInput: "#1a1c25",
-          colorInputForeground: "#eef0f6",
+          colorBackground: "#18181C",
+          colorForeground: "#ededed",
+          colorInput: "#09090B",
+          colorInputForeground: "#ededed",
         },
       }}
     >

@@ -1,22 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-// Prevent multiple Prisma Client instances
-// during Next.js hot-reloading in development.
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-
-export const prisma =
-  globalForPrisma.prisma ??
+const makeClient = () =>
   new PrismaClient({
-    adapter,
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
   });
+
+export const prisma = globalForPrisma.prisma ?? makeClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
-

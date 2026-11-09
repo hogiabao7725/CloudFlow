@@ -38,6 +38,6 @@ export default async function WorkspaceRoomPage({ params }: WorkspaceRoomPagePro
   }
 
   return (
-    <WorkspaceRoom initialWorkspace={workspace as unknown as WorkspaceItem} />
+    <WorkspaceRoom initialWorkspace={workspace as WorkspaceItem} />
   );
 }

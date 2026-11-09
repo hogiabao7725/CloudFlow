@@ -7,6 +7,23 @@ export interface WorkspaceCreator {
   imageUrl: string | null;
 }
 
+export interface WorkspaceDoc {
+  id: string;
+  workspaceId?: string;
+  content?: unknown;
+  yjsState?: string | Uint8Array | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface WorkspaceCanvas {
+  id: string;
+  workspaceId?: string;
+  content?: unknown;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
 export interface WorkspaceItem {
   id: string;
   name: string;
@@ -19,6 +36,6 @@ export interface WorkspaceItem {
   createdAt: Date | string;
   updatedAt: Date | string;
   creator?: WorkspaceCreator | null;
-  doc?: { id: string } | null;
-  canvas?: { id: string } | null;
+  doc?: WorkspaceDoc | null;
+  canvas?: WorkspaceCanvas | null;
 }
