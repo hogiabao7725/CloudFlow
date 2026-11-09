@@ -11,7 +11,9 @@ interface WorkspaceRoomPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function WorkspaceRoomPage({ params }: WorkspaceRoomPageProps) {
+export default async function WorkspaceRoomPage({
+  params,
+}: WorkspaceRoomPageProps) {
   const user = await syncUser();
   if (!user) {
     redirect("/sign-in");
@@ -23,9 +25,12 @@ export default async function WorkspaceRoomPage({ params }: WorkspaceRoomPagePro
   if (error || !workspace) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
-        <h2 className="text-xl font-bold text-foreground">Workspace Unavailable</h2>
+        <h2 className="text-xl font-bold text-foreground">
+          Workspace Unavailable
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {error || "The requested workspace could not be found or you do not have permission to view it."}
+          {error ||
+            "The requested workspace could not be found or you do not have permission to view it."}
         </p>
         <Button asChild className="mt-6" size="sm">
           <Link href="/dashboard">
@@ -37,7 +42,5 @@ export default async function WorkspaceRoomPage({ params }: WorkspaceRoomPagePro
     );
   }
 
-  return (
-    <WorkspaceRoom initialWorkspace={workspace as WorkspaceItem} />
-  );
+  return <WorkspaceRoom initialWorkspace={workspace as WorkspaceItem} />;
 }
