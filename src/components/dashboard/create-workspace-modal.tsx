@@ -102,7 +102,7 @@ export function CreateWorkspaceModal({
         onOpenChange(val);
       }}
     >
-      <DialogContent className="sm:max-w-[560px] bg-card border-border p-6 sm:p-7 shadow-2xl shadow-black/70">
+      <DialogContent className="sm:max-w-140 bg-card border-border p-6 sm:p-7 shadow-2xl shadow-black/70">
         {/* Header */}
         <DialogHeader className="space-y-1.5 pb-2 border-b border-border/60">
           <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export function CreateWorkspaceModal({
               </div>
 
               {/* Card Description */}
-              <div className="h-[40px] overflow-hidden">
+              <div className="h-10 overflow-hidden">
                 {description.trim() ? (
                   <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-5">
                     {description.trim()}
@@ -202,19 +202,24 @@ export function CreateWorkspaceModal({
                 )}
               </div>
 
-              {/* Card Tags */}
-              <div className="flex items-center gap-2 h-6">
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/25 bg-indigo-500/10 px-2 py-0.5 text-xs font-semibold text-indigo-300">
-                  <Network className="size-3.5" />
-                  <span>Canvas</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/25 bg-sky-500/10 px-2 py-0.5 text-xs font-semibold text-sky-300">
-                  <FileText className="size-3.5" />
-                  <span>Doc</span>
+              {/* Card Tags & Created Date */}
+              <div className="flex items-center justify-between h-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
+                    <Network className="size-3.5" />
+                    <span>Canvas</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300">
+                    <FileText className="size-3.5" />
+                    <span>Doc</span>
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground/75 tabular-nums">
+                  Created: Just now
                 </span>
               </div>
 
-              {/* Card Footer */}
+              {/* Card Footer: Creator & Updated Date */}
               <div className="flex items-center justify-between border-t border-border/50 pt-3 h-9 text-xs text-muted-foreground gap-2 min-w-0">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   {user?.imageUrl ? (
@@ -222,10 +227,10 @@ export function CreateWorkspaceModal({
                     <img
                       src={user.imageUrl}
                       alt={creatorName}
-                      className="size-5 rounded-full object-cover shrink-0 ring-1 ring-border"
+                      className="size-5.5 rounded-full object-cover shrink-0 ring-1 ring-border"
                     />
                   ) : (
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground">
+                    <span className="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-foreground">
                       {avatarLetter}
                     </span>
                   )}
@@ -233,8 +238,8 @@ export function CreateWorkspaceModal({
                     {creatorName}
                   </span>
                 </div>
-                <span className="text-muted-foreground/80 shrink-0 text-[11px] whitespace-nowrap">
-                  Just now
+                <span className="text-xs font-medium text-foreground/80 tabular-nums shrink-0">
+                  Updated: Just now
                 </span>
               </div>
             </div>

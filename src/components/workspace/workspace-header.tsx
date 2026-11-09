@@ -226,7 +226,7 @@ export function WorkspaceHeader({
               className="group flex items-center gap-1.5 text-left min-w-0 py-1 px-2 rounded-lg hover:bg-secondary/60 transition-colors"
               title="Click to rename workspace"
             >
-              <span className="text-sm sm:text-base font-bold text-foreground truncate max-w-[160px] sm:max-w-xs md:max-w-sm">
+              <span className="text-sm sm:text-base font-bold text-foreground truncate max-w-40 sm:max-w-xs md:max-w-sm">
                 {name}
               </span>
               <Edit2 className="size-3.5 opacity-0 group-hover:opacity-100 text-muted-foreground transition-opacity shrink-0" />

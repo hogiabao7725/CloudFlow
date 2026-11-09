@@ -29,7 +29,10 @@ describe("User Actions", () => {
 
   describe("getAuthenticatedUser", () => {
     it("should return null if user is not authenticated in Clerk", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as any);
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
       const result = await getAuthenticatedUser();
       expect(result).toBeNull();
@@ -39,7 +42,7 @@ describe("User Actions", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "clerk_123",
         orgId: "org_123",
-      } as any);
+      } as unknown as Awaited<ReturnType<typeof auth>>);
       vi.mocked(getUserByClerkId).mockResolvedValue(mockUser);
 
       const result = await getAuthenticatedUser();
@@ -56,7 +59,7 @@ describe("User Actions", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "clerk_123",
         orgId: null,
-      } as any);
+      } as unknown as Awaited<ReturnType<typeof auth>>);
       vi.mocked(getUserByClerkId).mockResolvedValue(null);
       vi.mocked(syncUser).mockResolvedValue(mockUser);
 
@@ -73,7 +76,7 @@ describe("User Actions", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "clerk_123",
         orgId: null,
-      } as any);
+      } as unknown as Awaited<ReturnType<typeof auth>>);
       vi.mocked(getUserByClerkId).mockResolvedValue(null);
       vi.mocked(syncUser).mockResolvedValue(null);
 

@@ -26,10 +26,6 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
             <span>{displayName}&apos;s Workspace</span>
-            <span>/</span>
-            <span className="text-foreground font-semibold">
-              Personal Scope
-            </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Architecture Initiatives
