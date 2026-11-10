@@ -5,12 +5,14 @@ import { useKanban } from "@/hooks/use-kanban";
 import { WorkspaceStatus } from "@prisma/client";
 import { WorkspaceItem } from "@/types/workspace";
 import {
+  createWorkspace,
   updateWorkspaceStatus,
   updateWorkspace,
   deleteWorkspace,
 } from "@/actions/workspace";
 
 vi.mock("@/actions/workspace", () => ({
+  createWorkspace: vi.fn(),
   updateWorkspaceStatus: vi.fn(),
   updateWorkspace: vi.fn(),
   deleteWorkspace: vi.fn(),
@@ -125,6 +127,30 @@ describe("useKanban Hook", () => {
     expect(typeof kanban.actions.createWorkspace).toBe("function");
     expect(typeof kanban.actions.renameWorkspace).toBe("function");
     expect(typeof kanban.actions.deleteWorkspace).toBe("function");
+  });
+
+  it("should handle create action and call server insert", async () => {
+    const newWs: WorkspaceItem = {
+      id: "ws-new",
+      name: "New Cluster",
+      description: "Cluster desc",
+      status: WorkspaceStatus.PLANNING,
+      position: 5000,
+      creatorId: "user-1",
+      clerkOrgId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    vi.mocked(createWorkspace).mockResolvedValue({
+      success: true,
+      workspace: newWs,
+    } as unknown as Awaited<ReturnType<typeof createWorkspace>>);
+
+    const kanban = renderUseKanban(mockWorkspaces);
+    const success = await kanban.actions.createWorkspace({ name: "New Cluster", description: "Cluster desc" });
+
+    expect(success).toBe(true);
+    expect(createWorkspace).toHaveBeenCalledWith({ name: "New Cluster", description: "Cluster desc" });
   });
 
   it("should handle rename action and call server update", async () => {

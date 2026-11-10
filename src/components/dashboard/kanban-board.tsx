@@ -124,7 +124,7 @@ export function KanbanBoard({
       <CreateWorkspaceModal
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onCreated={actions.createWorkspace}
+        onCreate={actions.createWorkspace}
         clerkOrgId={clerkOrgId}
       />
 

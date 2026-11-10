@@ -24,20 +24,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { createWorkspace } from "@/actions/workspace";
-import { WorkspaceItem } from "@/types/workspace";
+import type { CreateWorkspaceInput } from "@/validators/workspace";
 
 interface CreateWorkspaceModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: (workspace: WorkspaceItem) => void;
+  onCreate: (input: CreateWorkspaceInput) => Promise<boolean>;
   clerkOrgId?: string | null;
 }
 
 export function CreateWorkspaceModal({
   open,
   onOpenChange,
-  onCreated,
+  onCreate,
   clerkOrgId,
 }: CreateWorkspaceModalProps) {
   const { user } = useUser();
@@ -63,23 +62,16 @@ export function CreateWorkspaceModal({
 
     setIsPending(true);
     try {
-      const result = await createWorkspace({
+      const success = await onCreate({
         name: name.trim(),
         description: description.trim() || undefined,
         clerkOrgId: clerkOrgId || undefined,
       });
 
-      if (!result.success || !result.workspace) {
-        toast.error(result.error || "Failed to create workspace");
-        return;
+      if (success) {
+        resetState();
+        onOpenChange(false);
       }
-
-      toast.success("Workspace created");
-      onCreated?.(result.workspace);
-      resetState();
-      onOpenChange(false);
-    } catch {
-      toast.error("Failed to create workspace");
     } finally {
       setIsPending(false);
     }
