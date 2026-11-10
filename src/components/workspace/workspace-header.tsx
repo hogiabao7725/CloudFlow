@@ -2,35 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Share2, Sparkles, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Share2,
+  Sparkles,
+  Check,
+  ListCollapse,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { WorkspaceItem } from "@/types/workspace";
 import { WorkspaceTitle } from "./workspace-title";
 import { WorkspaceStatusSelect } from "./workspace-status-select";
-import { WorkspaceViewToggle, ViewMode } from "./workspace-view-toggle";
-
-export type { ViewMode };
+import { WorkspacePresence } from "./workspace-presence";
 
 interface WorkspaceHeaderProps {
   workspace: WorkspaceItem;
-  viewMode: ViewMode;
-  onViewModeChange: (mode: ViewMode) => void;
-  aiDrawerOpen: boolean;
-  onToggleAiDrawer: () => void;
+  outlineOpen: boolean;
+  onToggleOutline: () => void;
+  aiOpen: boolean;
+  onToggleAi: () => void;
   onWorkspaceUpdated?: (updated: Partial<WorkspaceItem>) => void;
 }
 
-/**
- * Top control bar for the dual-view workspace room.
- * Assembles title rename, status selection, view mode switching, and collaborative actions.
- */
 export function WorkspaceHeader({
   workspace,
-  viewMode,
-  onViewModeChange,
-  aiDrawerOpen,
-  onToggleAiDrawer,
+  outlineOpen,
+  onToggleOutline,
+  aiOpen,
+  onToggleAi,
   onWorkspaceUpdated,
 }: WorkspaceHeaderProps) {
   const [copied, setCopied] = useState(false);
@@ -47,22 +47,40 @@ export function WorkspaceHeader({
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-border bg-card/90 px-3 sm:px-5 h-14 shrink-0 select-none z-30 gap-2">
-      {/* LEFT: Back to Dashboard, Title & Status */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <header className="flex items-center justify-between border-b border-border bg-card/80 px-3 sm:px-4 h-12 shrink-0 select-none z-20 gap-2">
+      {/* Left: Back, Outline toggle, Title & Status */}
+      <div className="flex items-center gap-2 min-w-0">
         <Button
           asChild
           variant="ghost"
           size="sm"
-          className="h-9 px-2 text-muted-foreground hover:text-foreground shrink-0"
+          className="h-8 px-2 text-muted-foreground hover:text-foreground shrink-0"
         >
           <Link href="/dashboard" title="Back to Dashboard">
-            <ArrowLeft className="size-4.5 sm:mr-1.5" />
-            <span className="hidden sm:inline font-medium text-sm">Dashboard</span>
+            <ArrowLeft className="size-4" />
           </Link>
         </Button>
 
-        <span className="h-5 w-px bg-border/80 shrink-0" />
+        <span className="h-4 w-px bg-border shrink-0" />
+
+        {/* Outline toggle */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onToggleOutline}
+          className={`h-8 px-2 gap-1 text-xs shrink-0 ${
+            outlineOpen
+              ? "bg-secondary text-foreground font-medium"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          title="Toggle Outline"
+        >
+          <ListCollapse className="size-3.5" />
+          <span className="hidden sm:inline">Outline</span>
+        </Button>
+
+        <span className="h-4 w-px bg-border shrink-0" />
 
         <WorkspaceTitle
           workspace={workspace}
@@ -75,57 +93,39 @@ export function WorkspaceHeader({
         />
       </div>
 
-      {/* CENTER: View Mode Segmented Control */}
-      <div className="shrink-0">
-        <WorkspaceViewToggle
-          viewMode={viewMode}
-          onViewModeChange={onViewModeChange}
-        />
-      </div>
-
-      {/* RIGHT: Presence, Share link & AI Assistant */}
+      {/* Right: Presence, Share & AI Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* Presence indicator (Online members) */}
-        <div className="hidden lg:flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
-          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-          <span className="font-mono text-[11px]">1 active</span>
-        </div>
+        <WorkspacePresence />
 
-        {/* Share Link Button */}
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={handleShare}
-          className="h-9 px-2.5 sm:px-3 gap-1.5 border-border bg-card text-foreground hover:bg-secondary text-xs sm:text-sm font-semibold"
-          title="Share workspace link"
+          className="h-8 px-2.5 text-xs gap-1.5"
+          title="Share link"
         >
           {copied ? (
-            <>
-              <Check className="size-4 text-emerald-400" />
-              <span className="hidden sm:inline">Copied</span>
-            </>
+            <Check className="size-3.5 text-emerald-400" />
           ) : (
-            <>
-              <Share2 className="size-4 text-muted-foreground" />
-              <span className="hidden sm:inline">Share</span>
-            </>
+            <Share2 className="size-3.5" />
           )}
+          <span className="hidden sm:inline">Share</span>
         </Button>
 
-        {/* AI Assistant Toggle Button */}
         <Button
           type="button"
           size="sm"
-          onClick={onToggleAiDrawer}
-          className={`h-9 px-3 sm:px-3.5 gap-2 text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            aiDrawerOpen
-              ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-cyan-500/20"
+          onClick={onToggleAi}
+          className={`h-8 px-2.5 text-xs gap-1.5 ${
+            aiOpen
+              ? "bg-cyan-500 text-black hover:bg-cyan-400 font-semibold"
               : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
           }`}
+          title="Toggle AI Assistant"
         >
-          <Sparkles className="size-4 text-cyan-400" />
-          <span className="hidden sm:inline">AI Assistant</span>
+          <Sparkles className="size-3.5" />
+          <span className="hidden sm:inline">AI</span>
         </Button>
       </div>
     </header>

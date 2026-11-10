@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/ui/themes";
 import { Navbar } from "@/components/common/navbar";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -38,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+        className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
         style={{ colorScheme: "dark" }}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground">
