@@ -151,7 +151,7 @@ export async function deleteWorkspace(id: string) {
 /**
  * Common security guard: validates authentication, existence, and access permission.
  */
-async function getAuthedWorkspace(id: string) {
+export async function getAuthedWorkspace(id: string) {
   const auth = await getAuthenticatedUser();
   if (!auth) return { error: "Unauthorized" };
 

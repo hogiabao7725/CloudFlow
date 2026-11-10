@@ -81,7 +81,9 @@ export function WorkspaceDocument({
   const [localContent, setLocalContent] = useState(MOCK_RFC_MARKDOWN);
   const isControlled = markdownContent !== undefined;
   const content = isControlled ? markdownContent : localContent;
-  const [viewMode, setViewMode] = useState<"preview" | "raw" | "split">("preview");
+  const [viewMode, setViewMode] = useState<"preview" | "raw" | "split">(
+    "preview",
+  );
 
   const handleContentChange = (val: string) => {
     if (!isControlled) {
@@ -97,7 +99,7 @@ export function WorkspaceDocument({
   return (
     <main className="flex-1 h-full overflow-hidden flex flex-col bg-background">
       {/* Document Sub-Header / Action Toolbar */}
-      <div className="h-11 px-4 border-b border-border/80 bg-card/40 flex items-center justify-between shrink-0 select-none">
+      <div className="h-11 px-4 border-b border-border/80 bg-card/40 flex items-center shrink-0 select-none">
         {/* View Mode Toggle Tabs (Preview / Raw / Split) */}
         <div className="flex items-center gap-1">
           <button
@@ -176,9 +178,7 @@ export function WorkspaceDocument({
           </button>
           <button
             type="button"
-            onClick={() =>
-              insertSnippet("```typescript\n", "\n```")
-            }
+            onClick={() => insertSnippet("```typescript\n", "\n```")}
             className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
             title="Code Block"
           >
@@ -188,7 +188,7 @@ export function WorkspaceDocument({
             type="button"
             onClick={() =>
               insertSnippet(
-                "| Header 1 | Header 2 |\n| :--- | :--- |\n| Row 1 | Value 1 |"
+                "| Header 1 | Header 2 |\n| :--- | :--- |\n| Row 1 | Value 1 |",
               )
             }
             className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
@@ -224,9 +224,7 @@ export function WorkspaceDocument({
         {(viewMode === "preview" || viewMode === "split") && (
           <div
             className={`h-full overflow-y-auto px-6 py-6 sm:px-8 scroll-smooth ${
-              viewMode === "split"
-                ? "w-1/2"
-                : "w-full max-w-4xl mx-auto"
+              viewMode === "split" ? "w-1/2" : "w-full max-w-4xl mx-auto"
             }`}
           >
             {/* Document Header Meta */}
@@ -355,7 +353,8 @@ export function WorkspaceDocument({
                     const match = /language-(\w+)/.exec(className || "");
                     const hasHljs = className?.includes("hljs");
                     const textContent = extractText(children);
-                    const isInline = !hasHljs && !match && !textContent.includes("\n");
+                    const isInline =
+                      !hasHljs && !match && !textContent.includes("\n");
 
                     if (isInline) {
                       return (

@@ -7,6 +7,7 @@ import {
 import { WorkspaceDocument } from "@/components/workspace/workspace-document";
 import { WorkspaceAISidebar } from "@/components/workspace/workspace-ai-sidebar";
 import { WorkspacePresence } from "@/components/workspace/workspace-presence";
+import { WorkspaceRoom } from "@/components/workspace/workspace-room";
 import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
 
 describe("Workspace Layout Components Contract", () => {
@@ -28,6 +29,10 @@ describe("Workspace Layout Components Contract", () => {
 
   it("should export WorkspacePresence as a functional component", () => {
     expect(typeof WorkspacePresence).toBe("function");
+  });
+
+  it("should export WorkspaceRoom as a functional component", () => {
+    expect(typeof WorkspaceRoom).toBe("function");
   });
 });
 

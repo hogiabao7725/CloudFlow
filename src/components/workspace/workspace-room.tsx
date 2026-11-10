@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { WorkspaceItem } from "@/types/workspace";
 import {
   ResizablePanelGroup,
@@ -15,17 +15,69 @@ import {
 import { WorkspaceDocument } from "./workspace-document";
 import { WorkspaceAISidebar } from "./workspace-ai-sidebar";
 import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
+import { saveDocMarkdown } from "@/actions/doc";
 
 interface WorkspaceRoomProps {
   initialWorkspace: WorkspaceItem;
+}
+
+function getInitialMarkdown(ws: WorkspaceItem): string {
+  const content = ws.doc?.content;
+  if (content && typeof content === "object" && "markdown" in content) {
+    const md = (content as { markdown?: unknown }).markdown;
+    if (typeof md === "string" && md.trim().length > 0) {
+      return md;
+    }
+  }
+  return MOCK_RFC_MARKDOWN;
 }
 
 export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
   const [workspace, setWorkspace] = useState<WorkspaceItem>(initialWorkspace);
   const [outlineOpen, setOutlineOpen] = useState(true);
   const [aiOpen, setAiOpen] = useState(true);
-  const [markdown, setMarkdown] = useState<string>(MOCK_RFC_MARKDOWN);
+
+  const initialContent = useMemo(
+    () => getInitialMarkdown(initialWorkspace),
+    [initialWorkspace]
+  );
+  const [markdown, setMarkdown] = useState<string>(initialContent);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedRef = useRef<string>(initialContent);
+
+  // Debounced background auto-save (1000ms delay)
+  const handleMarkdownChange = useCallback(
+    (newContent: string) => {
+      setMarkdown(newContent);
+      if (newContent === lastSavedRef.current) return;
+
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+
+      saveTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await saveDocMarkdown(workspace.id, newContent);
+          if (res.success) {
+            lastSavedRef.current = newContent;
+          }
+        } catch {
+          // Silent fallback
+        }
+      }, 1000);
+    },
+    [workspace.id]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
 
   // Dynamically extract outline headings from markdown
   const headings = useMemo(
@@ -46,7 +98,8 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
   };
 
   const handleInsertSnippet = (snippet: string) => {
-    setMarkdown((prev) => `${prev.trimEnd()}\n\n${snippet}\n`);
+    const updated = `${markdown.trimEnd()}\n\n${snippet}\n`;
+    handleMarkdownChange(updated);
   };
 
   return (
@@ -107,7 +160,7 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
             <WorkspaceDocument
               workspace={workspace}
               markdownContent={markdown}
-              onMarkdownChange={setMarkdown}
+              onMarkdownChange={handleMarkdownChange}
             />
           </ResizablePanel>
 
