@@ -5,6 +5,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock-anon-key",
+    },
   },
   resolve: {
     alias: {

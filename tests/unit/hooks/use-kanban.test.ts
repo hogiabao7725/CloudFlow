@@ -25,6 +25,10 @@ vi.mock("sonner", () => ({
   },
 }));
 
+vi.mock("@/lib/realtime", () => ({
+  subscribeToKanban: vi.fn(() => vi.fn()),
+}));
+
 // Helper to execute hook via React SSR runner without external DOM dependencies
 function renderUseKanban(initialWorkspaces: WorkspaceItem[]) {
   let hookOutput!: ReturnType<typeof useKanban>;

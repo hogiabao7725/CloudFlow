@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropResult } from "@hello-pangea/dnd";
 import { WorkspaceStatus } from "@prisma/client";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   deleteWorkspace,
 } from "@/actions/workspace";
 import type { CreateWorkspaceInput } from "@/validators/workspace";
+import { subscribeToKanban } from "@/lib/realtime";
 
 /**
  * Main hook managing Kanban board state, filters, and drag-and-drop actions.
@@ -24,6 +25,27 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
     setPrevInitial(initialWorkspaces);
     setWorkspaces(initialWorkspaces);
   }
+
+  // Real-time synchronization across clients and tabs
+  useEffect(() => {
+    return subscribeToKanban((mutation) => {
+      if (mutation.type === "INSERT") {
+        setWorkspaces((prev) =>
+          prev.some((w) => w.id === mutation.record.id)
+            ? prev
+            : [...prev, mutation.record],
+        );
+      } else if (mutation.type === "UPDATE") {
+        setWorkspaces((prev) =>
+          prev.map((w) =>
+            w.id === mutation.record.id ? { ...w, ...mutation.record } : w,
+          ),
+        );
+      } else if (mutation.type === "DELETE") {
+        setWorkspaces((prev) => prev.filter((w) => w.id !== mutation.id));
+      }
+    });
+  }, []);
 
   // Filter states
   const [search, setSearch] = useState("");
