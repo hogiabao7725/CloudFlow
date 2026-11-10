@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { WorkspaceItem } from "@/types/workspace";
 import {
   ResizablePanelGroup,
@@ -8,9 +8,13 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { WorkspaceHeader } from "./workspace-header";
-import { WorkspaceOutline, OutlineItem } from "./workspace-outline";
+import {
+  WorkspaceOutline,
+  extractHeadingsFromMarkdown,
+} from "./workspace-outline";
 import { WorkspaceDocument } from "./workspace-document";
 import { WorkspaceAISidebar } from "./workspace-ai-sidebar";
+import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
 
 interface WorkspaceRoomProps {
   initialWorkspace: WorkspaceItem;
@@ -20,8 +24,14 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
   const [workspace, setWorkspace] = useState<WorkspaceItem>(initialWorkspace);
   const [outlineOpen, setOutlineOpen] = useState(true);
   const [aiOpen, setAiOpen] = useState(true);
-  const [headings, setHeadings] = useState<OutlineItem[]>([]);
+  const [markdown, setMarkdown] = useState<string>(MOCK_RFC_MARKDOWN);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+
+  // Dynamically extract outline headings from markdown
+  const headings = useMemo(
+    () => extractHeadingsFromMarkdown(markdown),
+    [markdown]
+  );
 
   const handleWorkspaceUpdated = (updated: Partial<WorkspaceItem>) => {
     setWorkspace((prev) => ({ ...prev, ...updated }));
@@ -33,6 +43,10 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const handleInsertSnippet = (snippet: string) => {
+    setMarkdown((prev) => `${prev.trimEnd()}\n\n${snippet}\n`);
   };
 
   return (
@@ -54,7 +68,7 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
           direction="horizontal"
           className="h-full w-full"
         >
-          {/* Left: Dynamic Plate.js Outline Panel (~20%) */}
+          {/* Left: Dynamic Markdown Outline Panel (~20%) */}
           {outlineOpen && (
             <>
               <ResizablePanel
@@ -70,13 +84,14 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
                   items={headings}
                   activeId={activeHeadingId}
                   onSelectItem={handleSelectHeading}
+                  documentTitle={workspace.name}
                 />
               </ResizablePanel>
               <ResizableHandle withHandle />
             </>
           )}
 
-          {/* Center: Main Plate.js Document Area (~60%) */}
+          {/* Center: Main Markdown Document Workbench (~60%) */}
           <ResizablePanel
             id="panel-document"
             defaultSize={
@@ -91,11 +106,12 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
           >
             <WorkspaceDocument
               workspace={workspace}
-              onHeadingsChange={setHeadings}
+              markdownContent={markdown}
+              onMarkdownChange={setMarkdown}
             />
           </ResizablePanel>
 
-          {/* Right: Resizable AI Assistant Sidebar (~20%) */}
+          {/* Right: Resizable Copilot Assistant Sidebar (~20%) */}
           {aiOpen && (
             <>
               <ResizableHandle withHandle />
@@ -110,6 +126,7 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
                   open={aiOpen}
                   onClose={() => setAiOpen(false)}
                   workspaceName={workspace.name}
+                  onInsertSnippet={handleInsertSnippet}
                 />
               </ResizablePanel>
             </>

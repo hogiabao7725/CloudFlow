@@ -96,3 +96,52 @@
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   }
 }
+
+/* Syntax Highlighting overrides for Dark Graphite Theme */
+.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hljs-keyword,
+.hljs-operator,
+.hljs-selector-tag {
+  color: #ff7b72;
+}
+
+.hljs-string,
+.hljs-attr {
+  color: #a5d6ff;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-title.function_,
+.hljs-function {
+  color: #d2a8ff;
+}
+
+.hljs-title,
+.hljs-title.class_ {
+  color: #7ee787;
+}
+
+.hljs-number,
+.hljs-literal {
+  color: #79c0ff;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+.hljs-built_in,
+.hljs-type {
+  color: #ffa657;
+}
+
+.hljs-punctuation {
+  color: #c9d1d9;
+}
