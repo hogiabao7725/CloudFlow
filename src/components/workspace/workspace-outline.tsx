@@ -61,7 +61,7 @@ export function WorkspaceOutline({
     <aside className="w-full h-full bg-card/30 flex flex-col select-none overflow-hidden border-r border-border/70">
       {/* Header - Clean Title Case, consistent with Studio panels */}
       <div className="flex items-center justify-between h-11 px-3.5 border-b border-border/70 shrink-0 bg-card/40">
-        <span className="text-xs font-semibold text-foreground tracking-normal">
+        <span className="text-sm font-semibold text-foreground tracking-normal">
           Document Outline
         </span>
         <Button
@@ -94,12 +94,12 @@ export function WorkspaceOutline({
                 onClick={() => onSelectItem(item.id)}
                 className={`w-full text-left rounded-md transition-colors truncate cursor-pointer flex items-center ${
                   level === 1
-                    ? "mt-3 first:mt-0 py-1.5 px-2 font-semibold text-foreground text-sm sm:text-base tracking-tight"
+                    ? "mt-3 first:mt-0 py-1.5 px-2 font-semibold text-foreground text-sm tracking-tight"
                     : level === 2
-                    ? "py-1 pl-4 pr-2 text-xs sm:text-sm font-medium text-zinc-200 hover:text-white"
+                    ? "py-1 pl-4 pr-2 text-[13px] font-medium text-zinc-300 hover:text-white"
                     : level === 3
-                    ? "py-0.5 pl-7 pr-2 text-[11px] sm:text-xs font-normal text-zinc-400 hover:text-zinc-200"
-                    : "py-0.5 pl-10 pr-2 text-[10px] sm:text-[11px] font-normal text-zinc-500 hover:text-zinc-300"
+                    ? "py-0.5 pl-7 pr-2 text-xs font-normal text-zinc-400 hover:text-zinc-200"
+                    : "py-0.5 pl-10 pr-2 text-[11px] font-normal text-zinc-500 hover:text-zinc-300"
                 } ${
                   isActive
                     ? "bg-secondary text-foreground font-medium border border-border/70"

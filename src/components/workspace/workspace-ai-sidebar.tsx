@@ -38,7 +38,7 @@ export function WorkspaceAISidebar({
       <div className="flex items-center justify-between h-11 px-3.5 border-b border-border/70 shrink-0 bg-card/40">
         <div className="flex items-center gap-2 text-foreground">
           <Sparkles className="size-4 text-cyan-400" />
-          <span className="text-xs font-semibold text-foreground">
+          <span className="text-sm font-semibold text-foreground">
             CloudFlow AI
           </span>
         </div>

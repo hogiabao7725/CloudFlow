@@ -103,7 +103,7 @@ export function WorkspaceDocument({
           <button
             type="button"
             onClick={() => setViewMode("preview")}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
+            className={`px-2.5 py-1 rounded text-[13px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
               viewMode === "preview"
                 ? "bg-secondary text-foreground border border-border"
                 : "text-muted-foreground hover:text-foreground"
@@ -115,7 +115,7 @@ export function WorkspaceDocument({
           <button
             type="button"
             onClick={() => setViewMode("raw")}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
+            className={`px-2.5 py-1 rounded text-[13px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
               viewMode === "raw"
                 ? "bg-secondary text-foreground border border-border"
                 : "text-muted-foreground hover:text-foreground"
@@ -127,7 +127,7 @@ export function WorkspaceDocument({
           <button
             type="button"
             onClick={() => setViewMode("split")}
-            className={`hidden lg:flex px-2.5 py-1 rounded text-xs font-medium items-center gap-1.5 cursor-pointer transition-colors ${
+            className={`hidden lg:flex px-2.5 py-1 rounded text-[13px] font-medium items-center gap-1.5 cursor-pointer transition-colors ${
               viewMode === "split"
                 ? "bg-secondary text-foreground border border-border"
                 : "text-muted-foreground hover:text-foreground"
