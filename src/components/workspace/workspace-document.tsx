@@ -1,94 +1,116 @@
 "use client";
 
+import { createPlatePlugin, Plate, usePlateEditor } from "platejs/react";
 import { WorkspaceItem } from "@/types/workspace";
+import { Editor } from "@/components/plate-ui/editor";
+import {
+  Heading1Element,
+  Heading2Element,
+  Heading3Element,
+} from "@/components/plate-ui/heading-element";
+import { ParagraphElement } from "@/components/plate-ui/paragraph-element";
+import { CodeBlockElement } from "@/components/plate-ui/code-block-element";
+import { BlockquoteElement } from "@/components/plate-ui/blockquote-element";
+import { OutlineItem } from "./workspace-outline";
 
-interface WorkspaceDocumentProps {
-  workspace: WorkspaceItem;
+export const platePlugins = [
+  createPlatePlugin({
+    key: "h1",
+    node: { isElement: true, type: "h1", component: Heading1Element },
+  }),
+  createPlatePlugin({
+    key: "h2",
+    node: { isElement: true, type: "h2", component: Heading2Element },
+  }),
+  createPlatePlugin({
+    key: "h3",
+    node: { isElement: true, type: "h3", component: Heading3Element },
+  }),
+  createPlatePlugin({
+    key: "p",
+    node: { isElement: true, type: "p", component: ParagraphElement },
+  }),
+  createPlatePlugin({
+    key: "code_block",
+    node: { isElement: true, type: "code_block", component: CodeBlockElement },
+  }),
+  createPlatePlugin({
+    key: "blockquote",
+    node: { isElement: true, type: "blockquote", component: BlockquoteElement },
+  }),
+];
+
+interface PlateNodeChild {
+  text?: string;
+  [key: string]: unknown;
 }
 
-export function WorkspaceDocument({ workspace }: WorkspaceDocumentProps) {
+interface PlateNodeItem {
+  id?: string;
+  type?: string;
+  children?: PlateNodeChild[];
+  [key: string]: unknown;
+}
+
+export function extractHeadings(nodes: unknown[]): OutlineItem[] {
+  const items: OutlineItem[] = [];
+  if (!Array.isArray(nodes)) return items;
+
+  for (const node of nodes as PlateNodeItem[]) {
+    if (node && (node.type === "h1" || node.type === "h2" || node.type === "h3")) {
+      const text = (node.children || [])
+        .map((c) => c.text || "")
+        .join("")
+        .trim();
+
+      if (text) {
+        items.push({
+          id: node.id || `heading-${items.length}`,
+          title: text,
+          level: node.type === "h1" ? 1 : node.type === "h2" ? 2 : 3,
+        });
+      }
+    }
+  }
+
+  return items;
+}
+
+export const INITIAL_PLATE_VALUE = [
+  {
+    type: "p",
+    children: [{ text: "" }],
+  },
+];
+
+interface WorkspaceDocumentProps {
+  workspace?: WorkspaceItem;
+  onHeadingsChange?: (headings: OutlineItem[]) => void;
+}
+
+export function WorkspaceDocument({
+  onHeadingsChange,
+}: WorkspaceDocumentProps) {
+  const editor = usePlateEditor({
+    value: INITIAL_PLATE_VALUE,
+    plugins: platePlugins,
+  });
+
   return (
-    <main className="flex-1 h-full overflow-y-auto bg-background px-6 py-6 sm:px-8 scroll-smooth">
-      <div className="w-full space-y-6 pb-12">
-        {/* Title */}
-        <div className="border-b border-border/80 pb-4">
-          <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-            RFC Specification
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
-            {workspace.name}
-          </h1>
-        </div>
-
-        {/* Section 1 */}
-        <section id="sec-problem" className="space-y-3 scroll-mt-6">
-          <h2 className="text-lg font-bold text-foreground border-b border-border/50 pb-1.5">
-            1. Problem Statement
-          </h2>
-          <div id="sec-problem-context" className="space-y-2 scroll-mt-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Background & Bottlenecks
-            </h3>
-            <p className="text-sm text-foreground/90 leading-relaxed">
-              Describe the technical context, existing bottlenecks, and primary objectives
-              of this architecture specification. Highlight latency constraints, traffic spikes,
-              and connection contention points.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 2 */}
-        <section id="sec-architecture" className="space-y-3 scroll-mt-6">
-          <h2 className="text-lg font-bold text-foreground border-b border-border/50 pb-1.5">
-            2. System Architecture Flow
-          </h2>
-          <div id="sec-architecture-sequence" className="space-y-2 scroll-mt-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Asynchronous Queue Pipeline
-            </h3>
-            <p className="text-sm text-foreground/90 leading-relaxed">
-              Overview of the microservices and messaging boundaries participating in the pipeline.
-              The boundary decouples synchronous user requests from backend billing commits.
-            </p>
-            <div className="w-full p-4 rounded-md border border-border bg-card/60 font-mono text-sm text-muted-foreground whitespace-pre-wrap">
-{`Client -> API Gateway -> Message Queue (SQS FIFO) -> Worker Service (ECS Fargate) -> Database (Aurora PG)`}
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3 */}
-        <section id="sec-nfr" className="space-y-3 scroll-mt-6">
-          <h2 className="text-lg font-bold text-foreground border-b border-border/50 pb-1.5">
-            3. Non-Functional Requirements (NFR)
-          </h2>
-          <div id="sec-nfr-latency" className="space-y-2 scroll-mt-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              P99 Latency & Throughput SLA
-            </h3>
-            <ul className="list-disc list-inside text-sm text-foreground/90 space-y-1.5 leading-relaxed">
-              <li>P99 Ingestion Latency: &lt; 100ms</li>
-              <li>Peak Ingestion Throughput: 50,000 req/sec</li>
-              <li>Service Availability: 99.99% Multi-AZ deployment</li>
-              <li>Disaster Recovery Objective: RPO &lt; 1s, RTO &lt; 30s</li>
-            </ul>
-          </div>
-        </section>
-
-        {/* Section 4 */}
-        <section id="sec-security" className="space-y-3 scroll-mt-6">
-          <h2 className="text-lg font-bold text-foreground border-b border-border/50 pb-1.5">
-            4. Security & Compliance
-          </h2>
-          <div id="sec-security-iam" className="space-y-2 scroll-mt-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              IAM Least Privilege & KMS Encryption
-            </h3>
-            <p className="text-sm text-foreground/90 leading-relaxed">
-              Data encryption at rest using AWS KMS Customer Managed Keys and in transit via TLS 1.3.
-              IAM task execution roles are strictly scoped to minimal permissions.
-            </p>
-          </div>
-        </section>
+    <main className="flex-1 h-full overflow-y-auto bg-background px-6 py-8 sm:px-10 scroll-smooth">
+      <div className="w-full pb-24">
+        {/* Plate.js Living Editor */}
+        <Plate
+          editor={editor}
+          onValueChange={({ value }) => {
+            if (onHeadingsChange) {
+              const headings = extractHeadings(value);
+              onHeadingsChange(headings);
+            }
+          }}
+        >
+          <Editor placeholder="Start typing your architecture specification or headings to structure the outline..." />
+        </Plate>
       </div>
     </main>
   );
