@@ -58,7 +58,7 @@ describe("Doc Server Actions", () => {
       const mockSavedDoc = {
         id: "doc_1",
         workspaceId: "ws_123",
-        content: { markdown: "# Spec Content" },
+        markdown: "# Spec Content",
       };
 
       vi.mocked(getAuthedWorkspace).mockResolvedValue({
@@ -96,7 +96,7 @@ describe("Doc Server Actions", () => {
   });
 
   describe("getDocMarkdown", () => {
-    it("should return markdown string if doc content contains markdown", async () => {
+    it("should return markdown directly from doc record", async () => {
       vi.mocked(getAuthedWorkspace).mockResolvedValue({
         workspace: { id: "ws_123" },
         auth: { user: { id: "user_1" } },
@@ -104,15 +104,15 @@ describe("Doc Server Actions", () => {
       vi.mocked(findDocByWorkspaceId).mockResolvedValue({
         id: "doc_1",
         workspaceId: "ws_123",
-        content: { markdown: "# My Doc" },
+        markdown: "# My RFC Specification",
       } as never);
 
       const result = await getDocMarkdown("ws_123");
       expect(result.success).toBe(true);
-      expect(result.markdown).toBe("# My Doc");
+      expect(result.markdown).toBe("# My RFC Specification");
     });
 
-    it("should return null markdown if doc has no markdown field", async () => {
+    it("should return null markdown if doc has no markdown", async () => {
       vi.mocked(getAuthedWorkspace).mockResolvedValue({
         workspace: { id: "ws_123" },
         auth: { user: { id: "user_1" } },
@@ -120,7 +120,7 @@ describe("Doc Server Actions", () => {
       vi.mocked(findDocByWorkspaceId).mockResolvedValue({
         id: "doc_1",
         workspaceId: "ws_123",
-        content: [],
+        markdown: null,
       } as never);
 
       const result = await getDocMarkdown("ws_123");

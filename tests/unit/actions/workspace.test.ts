@@ -6,6 +6,9 @@ import {
   updateWorkspaceStatus,
   updateWorkspace,
   deleteWorkspace,
+  linkWorkspaceGitHubPr,
+  refreshWorkspaceGitHubPr,
+  unlinkWorkspaceGitHubPr,
 } from "@/actions/workspace";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -16,8 +19,10 @@ import {
   getHighestPosition,
   insertWorkspace,
   updateWorkspaceData,
+  updateWorkspaceGitHubPr,
   deleteWorkspaceById,
 } from "@/data/workspace";
+import { parseGitHubPrInput, fetchGitHubPr } from "@/lib/github";
 import { WorkspaceStatus } from "@prisma/client";
 
 // Mocks
@@ -40,7 +45,13 @@ vi.mock("@/data/workspace", () => ({
   getHighestPosition: vi.fn(),
   insertWorkspace: vi.fn(),
   updateWorkspaceData: vi.fn(),
+  updateWorkspaceGitHubPr: vi.fn(),
   deleteWorkspaceById: vi.fn(),
+}));
+
+vi.mock("@/lib/github", () => ({
+  parseGitHubPrInput: vi.fn(),
+  fetchGitHubPr: vi.fn(),
 }));
 
 describe("Workspace Server Actions", () => {
@@ -281,6 +292,75 @@ describe("Workspace Server Actions", () => {
       expect(result.success).toBe(true);
       expect(deleteWorkspaceById).toHaveBeenCalledWith("ws_to_delete");
       expect(revalidatePath).toHaveBeenCalledWith("/workspaces");
+    });
+  });
+
+  describe("linkWorkspaceGitHubPr", () => {
+    it("should link GitHub PR to workspace and revalidate paths", async () => {
+      vi.mocked(auth).mockResolvedValue({ userId: "clerk_user_123", orgId: null } as never);
+      vi.mocked(getUserByClerkId).mockResolvedValue(mockUser as never);
+
+      const existing = { id: "ws_1", creatorId: mockUser.id, clerkOrgId: null };
+      vi.mocked(findWorkspaceById).mockResolvedValue(existing as never);
+
+      vi.mocked(parseGitHubPrInput).mockReturnValue({
+        owner: "hogiabao7725",
+        repo: "CloudFlow",
+        prNumber: 3,
+      });
+
+      const mockPr = {
+        url: "https://github.com/hogiabao7725/CloudFlow/pull/3",
+        number: 3,
+        title: "feat: RFC specs",
+        state: "closed" as const,
+        merged: true,
+        branch: "feat/room-rfc",
+        ciStatus: "passed" as const,
+      };
+      vi.mocked(fetchGitHubPr).mockResolvedValue(mockPr);
+      vi.mocked(updateWorkspaceGitHubPr).mockResolvedValue({ id: "ws_1", githubPr: mockPr } as never);
+
+      const result = await linkWorkspaceGitHubPr("ws_1", "#3");
+      expect(result.success).toBe(true);
+      expect(result.githubPr).toEqual(mockPr);
+      expect(updateWorkspaceGitHubPr).toHaveBeenCalledWith("ws_1", mockPr);
+      expect(revalidatePath).toHaveBeenCalledWith("/dashboard");
+    });
+
+    it("should return error if PR is not found on GitHub", async () => {
+      vi.mocked(auth).mockResolvedValue({ userId: "clerk_user_123", orgId: null } as never);
+      vi.mocked(getUserByClerkId).mockResolvedValue(mockUser as never);
+
+      const existing = { id: "ws_1", creatorId: mockUser.id, clerkOrgId: null };
+      vi.mocked(findWorkspaceById).mockResolvedValue(existing as never);
+
+      vi.mocked(parseGitHubPrInput).mockReturnValue({
+        owner: "hogiabao7725",
+        repo: "CloudFlow",
+        prNumber: 999,
+      });
+      vi.mocked(fetchGitHubPr).mockResolvedValue(null);
+
+      const result = await linkWorkspaceGitHubPr("ws_1", "#999");
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Could not find PR #999");
+    });
+  });
+
+  describe("unlinkWorkspaceGitHubPr", () => {
+    it("should remove githubPr from workspace", async () => {
+      vi.mocked(auth).mockResolvedValue({ userId: "clerk_user_123", orgId: null } as never);
+      vi.mocked(getUserByClerkId).mockResolvedValue(mockUser as never);
+
+      const existing = { id: "ws_1", creatorId: mockUser.id, clerkOrgId: null };
+      vi.mocked(findWorkspaceById).mockResolvedValue(existing as never);
+      vi.mocked(updateWorkspaceGitHubPr).mockResolvedValue({ id: "ws_1", githubPr: null } as never);
+
+      const result = await unlinkWorkspaceGitHubPr("ws_1");
+      expect(result.success).toBe(true);
+      expect(updateWorkspaceGitHubPr).toHaveBeenCalledWith("ws_1", null);
+      expect(revalidatePath).toHaveBeenCalledWith("/dashboard");
     });
   });
 });

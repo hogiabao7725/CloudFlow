@@ -22,12 +22,8 @@ interface WorkspaceRoomProps {
 }
 
 function getInitialMarkdown(ws: WorkspaceItem): string {
-  const content = ws.doc?.content;
-  if (content && typeof content === "object" && "markdown" in content) {
-    const md = (content as { markdown?: unknown }).markdown;
-    if (typeof md === "string" && md.trim().length > 0) {
-      return md;
-    }
+  if (ws.doc?.markdown && ws.doc.markdown.trim().length > 0) {
+    return ws.doc.markdown;
   }
   return MOCK_RFC_MARKDOWN;
 }

@@ -9,6 +9,13 @@ export interface SaveDocResult {
   doc?: unknown;
 }
 
+export interface GetDocResult {
+  success: boolean;
+  error?: string;
+  markdown?: string | null;
+  doc?: unknown;
+}
+
 /**
  * Server Action to save document markdown content for a given workspace.
  * Validates authentication and workspace access permissions.
@@ -42,7 +49,9 @@ export async function saveDocMarkdown(
 /**
  * Server Action to fetch doc markdown for a given workspace.
  */
-export async function getDocMarkdown(workspaceId: string) {
+export async function getDocMarkdown(
+  workspaceId: string
+): Promise<GetDocResult> {
   if (!workspaceId || typeof workspaceId !== "string") {
     return { success: false, error: "Invalid workspace ID" };
   }
@@ -54,15 +63,11 @@ export async function getDocMarkdown(workspaceId: string) {
 
   try {
     const doc = await findDocByWorkspaceId(workspaceId);
-    let markdown: string | null = null;
-    if (
-      doc?.content &&
-      typeof doc.content === "object" &&
-      "markdown" in doc.content
-    ) {
-      markdown = (doc.content as { markdown?: string }).markdown ?? null;
-    }
-    return { success: true, markdown, doc };
+    return {
+      success: true,
+      markdown: doc?.markdown ?? null,
+      doc,
+    };
   } catch (error) {
     console.error("Failed to load doc markdown:", error);
     return { success: false, error: "Database error while fetching document" };

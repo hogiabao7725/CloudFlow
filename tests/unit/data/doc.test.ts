@@ -21,7 +21,7 @@ describe("Doc Data Access Layer", () => {
       const mockDoc = {
         id: "doc_123",
         workspaceId: "ws_456",
-        content: { markdown: "# Spec" },
+        markdown: "# Spec Title",
       };
       vi.mocked(prisma.doc.findUnique).mockResolvedValue(mockDoc as never);
 
@@ -34,11 +34,11 @@ describe("Doc Data Access Layer", () => {
   });
 
   describe("upsertDocMarkdown", () => {
-    it("should upsert markdown content for a given workspaceId", async () => {
+    it("should upsert markdown text directly for a given workspaceId", async () => {
       const mockSavedDoc = {
         id: "doc_123",
         workspaceId: "ws_456",
-        content: { markdown: "## Updated Architecture" },
+        markdown: "## Updated Architecture",
       };
       vi.mocked(prisma.doc.upsert).mockResolvedValue(mockSavedDoc as never);
 
@@ -50,11 +50,11 @@ describe("Doc Data Access Layer", () => {
       expect(prisma.doc.upsert).toHaveBeenCalledWith({
         where: { workspaceId: "ws_456" },
         update: {
-          content: { markdown: "## Updated Architecture" },
+          markdown: "## Updated Architecture",
         },
         create: {
           workspaceId: "ws_456",
-          content: { markdown: "## Updated Architecture" },
+          markdown: "## Updated Architecture",
         },
       });
     });
