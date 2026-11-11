@@ -198,7 +198,7 @@ describe("Workspace Server Actions", () => {
       const foreignWorkspace = {
         id: "ws_foreign",
         creatorId: "another_user_id",
-        clerkOrgId: null,
+        clerkOrgId: "different_org_xyz",
       };
       vi.mocked(findWorkspaceById).mockResolvedValue(foreignWorkspace as never);
 

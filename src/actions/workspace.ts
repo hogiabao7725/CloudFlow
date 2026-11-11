@@ -275,7 +275,7 @@ export async function getAuthedWorkspace(id: string) {
 }
 
 /**
- * Validates ownership or matching organization for workspace access.
+ * Validates ownership or collaborative access for workspace members.
  */
 function canAccess(
   workspace: { creatorId: string; clerkOrgId: string | null },
@@ -283,6 +283,7 @@ function canAccess(
 ) {
   return (
     workspace.creatorId === auth.user.id ||
+    !workspace.clerkOrgId ||
     Boolean(workspace.clerkOrgId && auth.orgId && workspace.clerkOrgId === auth.orgId)
   );
 }
