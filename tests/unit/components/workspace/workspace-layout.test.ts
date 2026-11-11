@@ -8,7 +8,8 @@ import { WorkspaceDocument } from "@/components/workspace/workspace-document";
 import { WorkspaceAISidebar } from "@/components/workspace/workspace-ai-sidebar";
 import { WorkspacePresence } from "@/components/workspace/workspace-presence";
 import { WorkspaceRoom } from "@/components/workspace/workspace-room";
-import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
+import { WorkspaceGitHubPr } from "@/components/workspace/workspace-github-pr";
+import { MOCK_RFC_MARKDOWN, MOCK_GITHUB_PR } from "@/mock/workspace-spec-mock";
 
 describe("Workspace Layout Components Contract", () => {
   it("should export WorkspaceHeader as a functional component", () => {
@@ -33,6 +34,10 @@ describe("Workspace Layout Components Contract", () => {
 
   it("should export WorkspaceRoom as a functional component", () => {
     expect(typeof WorkspaceRoom).toBe("function");
+  });
+
+  it("should export WorkspaceGitHubPr as a functional component", () => {
+    expect(typeof WorkspaceGitHubPr).toBe("function");
   });
 });
 
@@ -129,5 +134,18 @@ describe("Workspace Spec Mock Data Contract", () => {
     expect(MOCK_RFC_MARKDOWN).toContain("# 4. Implementation Code");
     expect(MOCK_RFC_MARKDOWN).toContain("# 5. Non-Functional Requirements (NFR)");
     expect(MOCK_RFC_MARKDOWN).toContain("# 6. Security & Tenant Isolation");
+  });
+
+  it("should export authentic GitHub PR mock data for quick preview and offline testing", () => {
+    expect(MOCK_GITHUB_PR).toBeDefined();
+    expect(MOCK_GITHUB_PR.number).toBe(4);
+    expect(MOCK_GITHUB_PR.branch).toBe("review/phase-2");
+    expect(MOCK_GITHUB_PR.state).toBe("closed");
+    expect(MOCK_GITHUB_PR.merged).toBe(true);
+    expect(MOCK_GITHUB_PR.ciStatus).toBe("passed");
+    expect(MOCK_GITHUB_PR.author.login).toBe("hogiabao7725");
+    expect(MOCK_GITHUB_PR.author.avatarUrl).toBe("https://github.com/hogiabao7725.png");
+    expect(MOCK_GITHUB_PR.url).toContain("github.com/hogiabao7725/CloudFlow/pull/4");
+    expect(typeof MOCK_GITHUB_PR.title).toBe("string");
   });
 });

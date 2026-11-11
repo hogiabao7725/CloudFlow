@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { WorkspaceItem } from "@/types/workspace";
+import { WorkspaceItem, GitHubPrInfo } from "@/types/workspace";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -31,7 +31,7 @@ function getInitialMarkdown(ws: WorkspaceItem): string {
 export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
   const [workspace, setWorkspace] = useState<WorkspaceItem>(initialWorkspace);
   const [outlineOpen, setOutlineOpen] = useState(true);
-  const [aiOpen, setAiOpen] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
 
   const initialContent = useMemo(
@@ -109,6 +109,9 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
                   activeId={activeHeadingId}
                   onSelectItem={handleSelectHeading}
                   documentTitle={workspace.name}
+                  workspaceId={workspace.id}
+                  githubPr={workspace.githubPr as GitHubPrInfo | null}
+                  onPrUpdated={(pr) => handleWorkspaceUpdated({ githubPr: pr })}
                 />
               </ResizablePanel>
               <ResizableHandle withHandle />

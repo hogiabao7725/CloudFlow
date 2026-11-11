@@ -15,6 +15,10 @@ export interface GitHubPrInfo {
   merged: boolean;
   branch: string;
   ciStatus?: "passed" | "failed" | "running" | "none";
+  author?: {
+    login: string;
+    avatarUrl?: string;
+  };
 }
 
 export interface WorkspaceDoc {
@@ -34,7 +38,7 @@ export interface WorkspaceItem {
   clerkOrgId: string | null;
   creatorId: string;
   shareToken?: string | null;
-  githubPr?: (GitHubPrInfo & Record<string, unknown>) | Prisma.JsonValue | null;
+  githubPr?: GitHubPrInfo | Prisma.JsonValue | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   creator?: WorkspaceCreator | null;

@@ -76,7 +76,11 @@ describe("GitHub Utility Module (src/lib/github.ts)", () => {
         merged: true,
         head: {
           ref: "feat/room-rfc",
-          sha: "sha_commit_123",
+          sha: "c741fa6e12345",
+        },
+        user: {
+          login: "hogiabao7725",
+          avatar_url: "https://github.com/hogiabao7725.png",
         },
       };
 
@@ -117,6 +121,10 @@ describe("GitHub Utility Module (src/lib/github.ts)", () => {
         merged: true,
         branch: "feat/room-rfc",
         ciStatus: "passed",
+        author: {
+          login: "hogiabao7725",
+          avatarUrl: "https://github.com/hogiabao7725.png",
+        },
       });
 
       global.fetch = originalFetch;

@@ -123,6 +123,14 @@ export async function fetchGitHubPr(
       merged: Boolean(prData.merged || prData.merged_at),
       branch: prData.head?.ref || "unknown",
       ciStatus,
+      ...(prData.user
+        ? {
+            author: {
+              login: prData.user.login,
+              avatarUrl: prData.user.avatar_url,
+            },
+          }
+        : {}),
     };
   } catch (err) {
     console.error("Error fetching GitHub PR:", err);

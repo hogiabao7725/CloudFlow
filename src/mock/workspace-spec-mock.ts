@@ -102,3 +102,18 @@ The target architectural SLAs for production deployment on Vercel and Supabase:
 - **Row-Level Security (RLS):** Supabase RLS policies restrict read and write operations strictly to authenticated workspace members.
 - **Payload Encryption:** Sensitive API tokens are encrypted with AES-256-GCM before persistent queuing.
 `;
+
+export const MOCK_GITHUB_PR = {
+  url: "https://github.com/hogiabao7725/CloudFlow/pull/4",
+  number: 4,
+  title:
+    "refactor(core): streamline architecture schema, add manual rfc saving and github pr tracking",
+  state: "closed" as const,
+  merged: true,
+  branch: "review/phase-2",
+  ciStatus: "passed" as const,
+  author: {
+    login: "hogiabao7725",
+    avatarUrl: "https://github.com/hogiabao7725.png",
+  },
+};

@@ -115,17 +115,18 @@ export function WorkspaceHeader({
 
         <Button
           type="button"
+          variant={aiOpen ? "secondary" : "ghost"}
           size="sm"
           onClick={onToggleAi}
           className={`h-8 px-2.5 text-xs gap-1.5 ${
             aiOpen
-              ? "bg-cyan-500 text-black hover:bg-cyan-400 font-semibold"
-              : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+              ? "bg-secondary text-foreground border border-border font-medium"
+              : "text-muted-foreground hover:text-foreground"
           }`}
-          title="Toggle AI Assistant"
+          title="Toggle Copilot Assistant"
         >
-          <Sparkles className="size-3.5" />
-          <span className="hidden sm:inline">AI</span>
+          <Sparkles className="size-3.5 text-zinc-400" />
+          <span className="hidden sm:inline">Copilot</span>
         </Button>
       </div>
     </header>

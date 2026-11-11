@@ -2,6 +2,8 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { GitHubPrInfo } from "@/types/workspace";
+import { WorkspaceGitHubPr } from "./workspace-github-pr";
 
 export interface OutlineItem {
   id: string;
@@ -46,6 +48,9 @@ interface WorkspaceOutlineProps {
   onSelectItem: (id: string) => void;
   documentTitle?: string;
   isSaved?: boolean;
+  workspaceId?: string;
+  githubPr?: GitHubPrInfo | null;
+  onPrUpdated?: (pr: GitHubPrInfo | null) => void;
 }
 
 export function WorkspaceOutline({
@@ -54,6 +59,9 @@ export function WorkspaceOutline({
   items,
   activeId,
   onSelectItem,
+  workspaceId,
+  githubPr,
+  onPrUpdated,
 }: WorkspaceOutlineProps) {
   if (!open) return null;
 
@@ -126,6 +134,15 @@ export function WorkspaceOutline({
           })
         )}
       </nav>
+
+      {/* Bottom: GitHub PR & CI Status Integration */}
+      {workspaceId && (
+        <WorkspaceGitHubPr
+          workspaceId={workspaceId}
+          githubPr={githubPr}
+          onPrUpdated={onPrUpdated}
+        />
+      )}
     </aside>
   );
 }
