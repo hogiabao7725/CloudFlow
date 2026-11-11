@@ -25,6 +25,9 @@ interface WorkspaceDocumentProps {
   workspace: WorkspaceItem;
   markdownContent?: string;
   onMarkdownChange?: (newContent: string) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
+  isSaved?: boolean;
 }
 
 function extractText(node: ReactNode): string {
@@ -77,6 +80,9 @@ export function WorkspaceDocument({
   workspace,
   markdownContent,
   onMarkdownChange,
+  onSave,
+  isSaving = false,
+  isSaved = true,
 }: WorkspaceDocumentProps) {
   const [localContent, setLocalContent] = useState(MOCK_RFC_MARKDOWN);
   const isControlled = markdownContent !== undefined;
@@ -99,7 +105,7 @@ export function WorkspaceDocument({
   return (
     <main className="flex-1 h-full overflow-hidden flex flex-col bg-background">
       {/* Document Sub-Header / Action Toolbar */}
-      <div className="h-11 px-4 border-b border-border/80 bg-card/40 flex items-center shrink-0 select-none">
+      <div className="h-11 px-4 border-b border-border/80 bg-card/40 flex items-center justify-between shrink-0 select-none">
         {/* View Mode Toggle Tabs (Preview / Raw / Split) */}
         <div className="flex items-center gap-1">
           <button
@@ -139,6 +145,23 @@ export function WorkspaceDocument({
             <span>Split View</span>
           </button>
         </div>
+
+        {/* Clean Save Action (KISS - No colorful icons) */}
+        {onSave && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">
+              {isSaving ? "Saving..." : isSaved ? "Saved" : "Unsaved changes"}
+            </span>
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={isSaving || isSaved}
+              className="h-7 px-3 rounded text-xs font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Formatting Quick-Toolbar (When in Raw or Split mode) */}

@@ -9,6 +9,7 @@ import {
   getHighestPosition,
   insertWorkspace,
   updateWorkspaceData,
+  updateWorkspaceGitHubPr,
   deleteWorkspaceById,
 } from "@/data/workspace";
 import {
@@ -16,6 +17,13 @@ import {
   type CreateWorkspaceInput,
   type UpdateWorkspaceInput,
 } from "@/validators/workspace";
+import { parseGitHubPrInput, fetchGitHubPr } from "@/lib/github";
+import type { GitHubPrInfo, WorkspaceItem } from "@/types/workspace";
+
+function revalidateWorkspacePaths() {
+  revalidatePath("/dashboard");
+  revalidatePath("/workspaces");
+}
 
 /**
  * Creates a new workspace at the end of the Planning column.
@@ -49,9 +57,8 @@ export async function createWorkspace(input: CreateWorkspaceInput) {
     status: WorkspaceStatus.PLANNING,
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/workspaces");
-  return { success: true, workspace };
+  revalidateWorkspacePaths();
+  return { success: true, workspace: workspace as unknown as WorkspaceItem };
 }
 
 /**
@@ -69,7 +76,7 @@ export async function getWorkspaces(filterOrgId?: string | null) {
     orgId: targetOrgId,
   });
 
-  return { success: true, workspaces };
+  return { success: true, workspaces: workspaces as unknown as WorkspaceItem[] };
 }
 
 /**
@@ -79,7 +86,7 @@ export async function getWorkspaceById(id: string) {
   const result = await getAuthedWorkspace(id);
   if ("error" in result) return { success: false, error: result.error };
 
-  return { success: true, workspace: result.workspace };
+  return { success: true, workspace: result.workspace as unknown as WorkspaceItem };
 }
 
 /**
@@ -102,9 +109,8 @@ export async function updateWorkspaceStatus(
     ...(position !== undefined ? { position } : {}),
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/workspaces");
-  return { success: true, workspace: updated };
+  revalidateWorkspacePaths();
+  return { success: true, workspace: updated as unknown as WorkspaceItem };
 }
 
 /**
@@ -125,9 +131,8 @@ export async function updateWorkspace(id: string, data: UpdateWorkspaceInput) {
       : {}),
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/workspaces");
-  return { success: true, workspace: updated };
+  revalidateWorkspacePaths();
+  return { success: true, workspace: updated as unknown as WorkspaceItem };
 }
 
 /**
@@ -139,9 +144,113 @@ export async function deleteWorkspace(id: string) {
 
   await deleteWorkspaceById(id);
 
-  revalidatePath("/dashboard");
-  revalidatePath("/workspaces");
+  revalidateWorkspacePaths();
   return { success: true };
+}
+
+/**
+ * Server Action to link a GitHub Pull Request to a workspace.
+ */
+export async function linkWorkspaceGitHubPr(
+  workspaceId: string,
+  prInput: string
+) {
+  if (!workspaceId || typeof workspaceId !== "string") {
+    return { success: false, error: "Invalid workspace ID" };
+  }
+
+  const result = await getAuthedWorkspace(workspaceId);
+  if ("error" in result) return { success: false, error: result.error };
+
+  const parsed = parseGitHubPrInput(prInput);
+  if (!parsed) {
+    return {
+      success: false,
+      error: "Invalid PR format. Enter a URL (e.g. https://github.com/owner/repo/pull/3) or #3",
+    };
+  }
+
+  const prInfo = await fetchGitHubPr(
+    parsed.owner,
+    parsed.repo,
+    parsed.prNumber
+  );
+  if (!prInfo) {
+    return {
+      success: false,
+      error: `Could not find PR #${parsed.prNumber} in ${parsed.owner}/${parsed.repo}`,
+    };
+  }
+
+  try {
+    const updated = await updateWorkspaceGitHubPr(workspaceId, prInfo);
+    revalidateWorkspacePaths();
+    return { success: true, workspace: updated, githubPr: prInfo };
+  } catch (err) {
+    console.error("Failed to link GitHub PR to workspace:", err);
+    return { success: false, error: "Database error while linking PR" };
+  }
+}
+
+/**
+ * Server Action to re-fetch and update the CI status of a linked GitHub PR.
+ */
+export async function refreshWorkspaceGitHubPr(workspaceId: string) {
+  if (!workspaceId || typeof workspaceId !== "string") {
+    return { success: false, error: "Invalid workspace ID" };
+  }
+
+  const result = await getAuthedWorkspace(workspaceId);
+  if ("error" in result) return { success: false, error: result.error };
+
+  const currentPr = result.workspace.githubPr as GitHubPrInfo | null;
+  if (!currentPr || !currentPr.url) {
+    return { success: false, error: "No GitHub PR linked to this workspace" };
+  }
+
+  const parsed = parseGitHubPrInput(currentPr.url);
+  if (!parsed) {
+    return { success: false, error: "Invalid linked GitHub PR URL" };
+  }
+
+  const updatedPr = await fetchGitHubPr(
+    parsed.owner,
+    parsed.repo,
+    parsed.prNumber
+  );
+  if (!updatedPr) {
+    return { success: false, error: "Failed to refresh PR data from GitHub" };
+  }
+
+  try {
+    const updated = await updateWorkspaceGitHubPr(workspaceId, updatedPr);
+    revalidateWorkspacePaths();
+    return { success: true, workspace: updated, githubPr: updatedPr };
+  } catch (err) {
+    console.error("Failed to refresh GitHub PR:", err);
+    return { success: false, error: "Database error while updating PR status" };
+  }
+}
+
+/**
+ * Server Action to unlink a GitHub PR from a workspace.
+ */
+export async function unlinkWorkspaceGitHubPr(workspaceId: string) {
+  if (!workspaceId || typeof workspaceId !== "string") {
+    return { success: false, error: "Invalid workspace ID" };
+  }
+
+  const result = await getAuthedWorkspace(workspaceId);
+  if ("error" in result) return { success: false, error: result.error };
+
+  try {
+    const updated = await updateWorkspaceGitHubPr(workspaceId, null);
+    revalidateWorkspacePaths();
+    return { success: true, workspace: updated };
+  } catch (err) {
+    console.error("Failed to unlink GitHub PR:", err);
+    return { success: false, error: "Database error while unlinking PR" };
+  }
 }
 
 // ============================================================================
@@ -166,7 +275,7 @@ export async function getAuthedWorkspace(id: string) {
 }
 
 /**
- * Validates ownership or matching organization for workspace access.
+ * Validates ownership or collaborative access for workspace members.
  */
 function canAccess(
   workspace: { creatorId: string; clerkOrgId: string | null },
@@ -174,7 +283,7 @@ function canAccess(
 ) {
   return (
     workspace.creatorId === auth.user.id ||
+    !workspace.clerkOrgId ||
     Boolean(workspace.clerkOrgId && auth.orgId && workspace.clerkOrgId === auth.orgId)
   );
 }
-

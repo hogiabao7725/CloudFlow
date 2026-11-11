@@ -27,7 +27,7 @@ model User {
 }
 
 // Collaborative workspace container
-// Paired 1-to-1 with an interactive Doc and Canvas
+// Collaborative workspace container (Kanban task & feature specification)
 model Workspace {
   id          String          @id @default(cuid())
   name        String
@@ -37,37 +37,22 @@ model Workspace {
   status      WorkspaceStatus @default(PLANNING)
   position    Float           @default(0)
   shareToken  String?         @unique
+  githubPr    Json?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  creator User    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   doc     Doc?
-  canvas  Canvas?
 
-  @@index([creatorId])
-  @@index([clerkOrgId])
+  @@index([creatorId, position])
+  @@index([clerkOrgId, position])
 }
 
-// Real-time collaborative document surface
-// Stores BlockNote JSON and Yjs binary updates
-// Yet Another Transformation Approach JS
+// Technical RFC specification document
 model Doc {
   id          String   @id @default(cuid())
   workspaceId String   @unique
-  content     Json?
-  yjsState    Bytes?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-}
-
-// Real-time architecture diagramming and whiteboard canvas surface
-// Stores architecture diagram entities, flowchart nodes, and ERD schemas
-model Canvas {
-  id          String   @id @default(cuid())
-  workspaceId String   @unique
-  content     Json?
+  markdown    String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

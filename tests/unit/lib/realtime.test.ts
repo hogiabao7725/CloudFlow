@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  subscribeToKanban,
-  subscribeToRoomPresence,
-  KanbanMutation,
-  RoomUser,
-} from "@/lib/realtime";
+import { subscribeToKanban, KanbanMutation } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { WorkspaceStatus } from "@prisma/client";
 import { WorkspaceItem } from "@/types/workspace";
@@ -14,39 +9,23 @@ type PostgresChangesHandler = (payload: {
   new?: unknown;
   old?: unknown;
 }) => void;
-type PresenceSyncHandler = () => void;
-type SubscribeStatusHandler = (status: string) => void;
 
 let registeredPostgresHandler: PostgresChangesHandler | null = null;
-let registeredPresenceHandler: PresenceSyncHandler | null = null;
-let registeredSubscribeHandler: SubscribeStatusHandler | null = null;
-
-const mockPresenceState = {
-  key1: [{ user: { id: "user-1", name: "Alice" } }],
-  key2: [{ user: { id: "user-2", name: "Bob" } }],
-};
 
 const mockChannel = {
   on: vi.fn(
     (
       type: string,
-      filter: { event: string },
-      handler: PostgresChangesHandler | PresenceSyncHandler,
+      _filter: { event: string },
+      handler: PostgresChangesHandler,
     ) => {
       if (type === "postgres_changes") {
-        registeredPostgresHandler = handler as PostgresChangesHandler;
-      } else if (type === "presence") {
-        registeredPresenceHandler = handler as PresenceSyncHandler;
+        registeredPostgresHandler = handler;
       }
       return mockChannel;
     },
   ),
-  subscribe: vi.fn((cb?: SubscribeStatusHandler) => {
-    registeredSubscribeHandler = cb || null;
-    return mockChannel;
-  }),
-  track: vi.fn().mockResolvedValue({}),
-  presenceState: vi.fn(() => mockPresenceState),
+  subscribe: vi.fn(() => mockChannel),
 };
 
 vi.mock("@/lib/supabase", () => ({
@@ -60,8 +39,6 @@ describe("Realtime Central Module (src/lib/realtime.ts)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     registeredPostgresHandler = null;
-    registeredPresenceHandler = null;
-    registeredSubscribeHandler = null;
   });
 
   describe("subscribeToKanban", () => {
@@ -111,8 +88,8 @@ describe("Realtime Central Module (src/lib/realtime.ts)", () => {
 
       const updatedWs: WorkspaceItem = {
         id: "ws-1",
-        name: "Renamed Gateway",
-        description: null,
+        name: "Updated Gateway",
+        description: "New desc",
         status: WorkspaceStatus.IN_PROGRESS,
         position: 2000,
         creatorId: "user-1",
@@ -147,36 +124,6 @@ describe("Realtime Central Module (src/lib/realtime.ts)", () => {
         type: "DELETE",
         id: "ws-deleted-id",
       });
-    });
-  });
-
-  describe("subscribeToRoomPresence", () => {
-    it("should subscribe to room presence channel and track user on SUBSCRIBED", async () => {
-      const onSync = vi.fn();
-      const currentUser: RoomUser = {
-        id: "user-me",
-        name: "Architect",
-        imageUrl: null,
-      };
-
-      const unsubscribe = subscribeToRoomPresence("room-123", currentUser, onSync);
-
-      expect(supabase.channel).toHaveBeenCalledWith("room-presence:room-123");
-      expect(mockChannel.subscribe).toHaveBeenCalled();
-
-      // Trigger SUBSCRIBED callback
-      await registeredSubscribeHandler!("SUBSCRIBED");
-      expect(mockChannel.track).toHaveBeenCalledWith({ user: currentUser });
-
-      // Trigger presence sync
-      registeredPresenceHandler!();
-      expect(onSync).toHaveBeenCalledWith([
-        { id: "user-1", name: "Alice" },
-        { id: "user-2", name: "Bob" },
-      ]);
-
-      unsubscribe();
-      expect(supabase.removeChannel).toHaveBeenCalledWith(mockChannel);
     });
   });
 });

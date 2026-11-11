@@ -7,14 +7,9 @@ export type KanbanMutation =
   | { type: "UPDATE"; record: WorkspaceItem }
   | { type: "DELETE"; id: string };
 
-export interface RoomUser {
-  id: string;
-  name: string;
-  imageUrl?: string | null;
-}
-
 /**
  * Subscribes to real-time PostgreSQL mutations on the Workspace table.
+ * Used exclusively for synchronizing Kanban board state across team members.
  * Returns an unsubscribe cleanup function.
  */
 export function subscribeToKanban(
@@ -48,44 +43,6 @@ export function subscribeToKanban(
       },
     )
     .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}
-
-/**
- * Subscribes to live room presence to track active participants.
- * Returns an unsubscribe cleanup function.
- */
-export function subscribeToRoomPresence(
-  roomId: string,
-  currentUser: RoomUser,
-  onSync: (users: RoomUser[]) => void,
-): () => void {
-  const channel: RealtimeChannel = supabase.channel(`room-presence:${roomId}`);
-
-  channel
-    .on("presence", { event: "sync" }, () => {
-      const state = channel.presenceState<{ user: RoomUser }>();
-      const activeUsers: RoomUser[] = [];
-
-      for (const presenceKey of Object.keys(state)) {
-        const presences = state[presenceKey] || [];
-        for (const presence of presences) {
-          if (presence?.user) {
-            activeUsers.push(presence.user);
-          }
-        }
-      }
-
-      onSync(activeUsers);
-    })
-    .subscribe(async (status) => {
-      if (status === "SUBSCRIBED") {
-        await channel.track({ user: currentUser });
-      }
-    });
 
   return () => {
     supabase.removeChannel(channel);

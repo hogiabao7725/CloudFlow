@@ -1,11 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
-export interface DocContentPayload {
-  markdown: string;
-}
-
 /**
- * Find document record by associated workspace ID.
+ * Find technical document record by associated workspace ID.
  */
 export async function findDocByWorkspaceId(workspaceId: string) {
   return prisma.doc.findUnique({
@@ -15,7 +11,7 @@ export async function findDocByWorkspaceId(workspaceId: string) {
 
 /**
  * Upsert document markdown content for a given workspace.
- * Creates the doc record if it does not exist yet; updates content if it does.
+ * Creates the doc record if it does not exist yet; updates markdown if it does.
  */
 export async function upsertDocMarkdown(
   workspaceId: string,
@@ -24,11 +20,11 @@ export async function upsertDocMarkdown(
   return prisma.doc.upsert({
     where: { workspaceId },
     update: {
-      content: { markdown },
+      markdown,
     },
     create: {
       workspaceId,
-      content: { markdown },
+      markdown,
     },
   });
 }

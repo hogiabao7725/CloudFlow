@@ -5,10 +5,12 @@ import {
   getHighestPosition,
   insertWorkspace,
   updateWorkspaceData,
+  updateWorkspaceGitHubPr,
   deleteWorkspaceById,
 } from "@/data/workspace";
 import { prisma } from "@/lib/prisma";
 import { WorkspaceStatus } from "@prisma/client";
+import type { GitHubPrInfo } from "@/types/workspace";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -30,7 +32,7 @@ describe("Workspace Data Access Layer", () => {
   });
 
   describe("findWorkspaceById", () => {
-    it("should query workspace by id including creator, doc, and canvas", async () => {
+    it("should query workspace by id including creator and doc", async () => {
       const mockResult = { id: "ws_1", name: "Architecture A" };
       vi.mocked(prisma.workspace.findUnique).mockResolvedValue(mockResult as never);
 
@@ -43,7 +45,6 @@ describe("Workspace Data Access Layer", () => {
             select: { id: true, name: true, email: true, imageUrl: true },
           },
           doc: true,
-          canvas: true,
         },
       });
     });
@@ -114,7 +115,7 @@ describe("Workspace Data Access Layer", () => {
   });
 
   describe("insertWorkspace", () => {
-    it("should create workspace record with initialized doc and canvas", async () => {
+    it("should create workspace record with initialized doc", async () => {
       const mockCreated = { id: "ws_new", name: "New Design" };
       vi.mocked(prisma.workspace.create).mockResolvedValue(mockCreated as never);
 
@@ -133,15 +134,13 @@ describe("Workspace Data Access Layer", () => {
           clerkOrgId: null,
           status: WorkspaceStatus.PLANNING,
           position: 1000,
-          doc: { create: { content: [] } },
-          canvas: { create: { content: {} } },
+          doc: { create: { markdown: "" } },
         },
         include: {
           creator: {
             select: { id: true, name: true, email: true, imageUrl: true },
           },
           doc: true,
-          canvas: true,
         },
       });
     });
@@ -166,15 +165,44 @@ describe("Workspace Data Access Layer", () => {
     });
   });
 
+  describe("updateWorkspaceGitHubPr", () => {
+    it("should update linked githubPr on workspace", async () => {
+      const prInfo: GitHubPrInfo = {
+        url: "https://github.com/hogiabao7725/CloudFlow/pull/3",
+        number: 3,
+        title: "feat: RFC specs",
+        state: "closed",
+        merged: true,
+        branch: "feat/room-rfc",
+        ciStatus: "passed",
+      };
+
+      const mockUpdated = { id: "ws_1", githubPr: prInfo };
+      vi.mocked(prisma.workspace.update).mockResolvedValue(mockUpdated as never);
+
+      const result = await updateWorkspaceGitHubPr("ws_1", prInfo);
+      expect(result).toEqual(mockUpdated);
+      expect(prisma.workspace.update).toHaveBeenCalledWith({
+        where: { id: "ws_1" },
+        data: { githubPr: prInfo },
+        include: {
+          creator: {
+            select: { id: true, name: true, email: true, imageUrl: true },
+          },
+        },
+      });
+    });
+  });
+
   describe("deleteWorkspaceById", () => {
     it("should delete workspace record by id", async () => {
-      const mockDeleted = { id: "ws_1" };
+      const mockDeleted = { id: "ws_delete_me" };
       vi.mocked(prisma.workspace.delete).mockResolvedValue(mockDeleted as never);
 
-      const result = await deleteWorkspaceById("ws_1");
+      const result = await deleteWorkspaceById("ws_delete_me");
       expect(result).toEqual(mockDeleted);
       expect(prisma.workspace.delete).toHaveBeenCalledWith({
-        where: { id: "ws_1" },
+        where: { id: "ws_delete_me" },
       });
     });
   });
