@@ -20,14 +20,14 @@ export function Navbar() {
   const isLandingPage = pathname === "/";
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-8">
+    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-white/10 bg-background/80 px-4 backdrop-blur-md sm:px-8">
       {/* Brand logo (Pure Minimalist Wordmark) */}
       <Link
         href={isSignedIn && !isLandingPage ? "/dashboard" : "/"}
-        className="flex items-center text-lg font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
+        className="flex items-center text-lg font-bold tracking-tight text-white transition-opacity hover:opacity-80"
       >
         <span>
-          Cloud<span className="text-foreground/70">Flow</span>
+          Cloud<span className="text-zinc-400">Flow</span>
         </span>
       </Link>
 
@@ -39,7 +39,7 @@ export function Navbar() {
             <Button
               variant="outline"
               size="default"
-              className="h-9.5 px-4 text-sm font-semibold border-border bg-card/60 hover:bg-card text-foreground"
+              className="h-9.5 px-4 text-sm font-semibold border-white/15 bg-card/60 hover:bg-card text-white"
             >
               Sign in
             </Button>
@@ -47,7 +47,7 @@ export function Navbar() {
           <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
             <Button
               size="default"
-              className="h-9.5 px-5 text-sm font-semibold shadow-sm"
+              className="h-9.5 px-5 text-sm font-semibold shadow-sm bg-white text-zinc-950 hover:bg-zinc-200"
             >
               Start workspace <ArrowRight className="size-4 ml-1" />
             </Button>
@@ -66,7 +66,7 @@ export function Navbar() {
             }}
           />
           {isLandingPage && (
-            <Button asChild size="default" className="h-9.5 px-5 text-sm font-semibold shadow-sm">
+            <Button asChild size="default" className="h-9.5 px-5 text-sm font-semibold shadow-sm bg-white text-zinc-950 hover:bg-zinc-200">
               <Link href="/dashboard">
                 Dashboard <ArrowRight className="size-4 ml-1" />
               </Link>

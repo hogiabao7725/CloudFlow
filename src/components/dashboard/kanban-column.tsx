@@ -8,7 +8,6 @@ import { WorkspaceCard } from "./workspace-card";
 interface KanbanColumnProps {
   status: WorkspaceStatus;
   title: string;
-  description: string;
   dotColor: string;
   workspaces: WorkspaceItem[];
   onRename?: (workspace: WorkspaceItem) => void;
@@ -18,26 +17,22 @@ interface KanbanColumnProps {
 export function KanbanColumn({
   status,
   title,
-  description,
   dotColor,
   workspaces,
   onRename,
   onDelete,
 }: KanbanColumnProps) {
   return (
-    <div className="flex flex-col rounded-2xl border border-border/80 bg-card/40 p-4 min-w-75 w-full flex-1">
+    <div className="flex flex-col min-w-0 w-full flex-1 xl:px-4 xl:first:pl-0 xl:last:pr-0">
       {/* Column Header */}
-      <div className="mb-4 px-1 pt-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className={`size-2.5 rounded-full ${dotColor} shadow-[0_0_8px_currentColor]`} />
-            <h3 className="text-base font-bold tracking-tight text-foreground">{title}</h3>
-          </div>
-          <span className="flex min-w-6 h-6 items-center justify-center rounded-full bg-secondary px-2 text-xs font-bold text-foreground">
+      <div className="mb-3 flex items-center justify-between px-1">
+        <div className="flex items-center gap-2.5">
+          <span className={`size-2.5 rounded-full ${dotColor}`} />
+          <h3 className="text-sm font-bold tracking-tight text-white">{title}</h3>
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-md border border-white/10 bg-white/10 px-1.5 text-xs font-bold tabular-nums text-white">
             {workspaces.length}
           </span>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground line-clamp-1">{description}</p>
       </div>
 
       {/* Droppable Area */}
@@ -46,8 +41,10 @@ export function KanbanColumn({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex flex-col gap-3 flex-1 min-h-95 rounded-xl p-1 transition-colors duration-200 ${
-              snapshot.isDraggingOver ? "bg-secondary/40 ring-1 ring-foreground/10" : ""
+            className={`flex flex-col gap-2.5 flex-1 min-h-95 rounded-lg p-1 transition-colors duration-150 ${
+              snapshot.isDraggingOver
+                ? "bg-white/[0.04] ring-1 ring-white/20"
+                : "bg-transparent"
             }`}
           >
             {workspaces.map((workspace, index) => (
@@ -62,9 +59,9 @@ export function KanbanColumn({
             {provided.placeholder}
 
             {workspaces.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-14 text-center">
-                <span className="text-sm font-semibold text-muted-foreground">No workspaces</span>
-                <span className="text-xs text-muted-foreground/60 mt-1">Drop initiatives here</span>
+              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-white/[0.02] py-10 min-h-[148px] text-center transition-colors">
+                <span className="text-sm font-semibold text-zinc-200">No workspaces</span>
+                <span className="text-xs text-zinc-400 mt-1">Drop initiatives here</span>
               </div>
             )}
           </div>
