@@ -12,7 +12,13 @@ interface KanbanToolbarProps {
   onOpenCreateModal: () => void;
 }
 
-const STATUS_FILTERS = ["ALL", "PLANNING", "IN_PROGRESS", "DONE"];
+const STATUS_FILTERS = [
+  { value: "ALL", label: "All" },
+  { value: "PLANNING", label: "Planning" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "PAUSED", label: "Paused" },
+  { value: "DONE", label: "Done" },
+];
 
 /**
  * Filter controls, search bar, view mode switch, and primary creation button.
@@ -40,19 +46,19 @@ export function KanbanToolbar({
           />
         </div>
 
-        <div className="flex items-center gap-0.5 bg-background/80 border border-border p-0.5 rounded-md">
-          {STATUS_FILTERS.map((st) => (
+        <div className="flex items-center gap-1 bg-background/80 border border-border p-1 rounded-md h-9">
+          {STATUS_FILTERS.map((item) => (
             <button
-              key={st}
+              key={item.value}
               type="button"
-              onClick={() => onStatusFilterChange(st)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                statusFilter === st
+              onClick={() => onStatusFilterChange(item.value)}
+              className={`h-7 px-3 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                statusFilter === item.value
                   ? "bg-secondary text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {st === "ALL" ? "All" : st.replace("_", " ")}
+              {item.label}
             </button>
           ))}
         </div>
@@ -60,31 +66,31 @@ export function KanbanToolbar({
 
       {/* View mode toggle and create button */}
       <div className="flex items-center gap-2.5 self-end lg:self-center">
-        <div className="flex items-center gap-0.5 bg-background/80 border border-border p-0.5 rounded-md">
+        <div className="flex items-center gap-1 bg-background/80 border border-border p-1 rounded-md h-9">
           <button
             type="button"
             onClick={() => onViewModeChange("board")}
             aria-label="Kanban board view"
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 h-7 px-3 rounded text-xs font-semibold transition-colors cursor-pointer ${
               viewMode === "board"
                 ? "bg-secondary text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <LayoutGrid className="size-3.5" />
+            <LayoutGrid className="size-4" />
             <span>Board</span>
           </button>
           <button
             type="button"
             onClick={() => onViewModeChange("list")}
             aria-label="List table view"
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 h-7 px-3 rounded text-xs font-semibold transition-colors cursor-pointer ${
               viewMode === "list"
                 ? "bg-secondary text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <List className="size-3.5" />
+            <List className="size-4" />
             <span>List</span>
           </button>
         </div>
@@ -92,7 +98,7 @@ export function KanbanToolbar({
         <Button
           onClick={onOpenCreateModal}
           size="sm"
-          className="h-9 px-3.5 gap-1.5 font-semibold text-xs rounded-md shadow-sm"
+          className="h-9 px-4 gap-2 font-medium text-sm rounded-md shadow-sm"
         >
           <Plus className="size-4" />
           <span>New workspace</span>

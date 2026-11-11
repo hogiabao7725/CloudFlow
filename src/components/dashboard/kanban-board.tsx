@@ -30,25 +30,21 @@ const COLUMNS = [
   {
     status: WorkspaceStatus.PLANNING,
     title: "Planning",
-    description: "Initial topology ideas & concepts",
     dotColor: "bg-slate-400",
   },
   {
     status: WorkspaceStatus.IN_PROGRESS,
     title: "In Progress",
-    description: "Active canvas sketching & RFC writing",
     dotColor: "bg-cyan-400",
   },
   {
     status: WorkspaceStatus.PAUSED,
     title: "Paused",
-    description: "Architecture reviews or waiting decisions",
     dotColor: "bg-amber-400",
   },
   {
     status: WorkspaceStatus.DONE,
     title: "Done",
-    description: "Approved & production-ready specifications",
     dotColor: "bg-emerald-400",
   },
 ];
@@ -73,7 +69,12 @@ export function KanbanBoard({
     return (
       <div className="flex flex-col gap-6 w-full animate-pulse">
         <div className="h-11 w-full rounded-lg bg-card/60" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full h-96 bg-card/40 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-border/40 w-full min-h-[500px]">
+          <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
+          <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
+          <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
+          <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
+        </div>
       </div>
     );
   }
@@ -94,13 +95,12 @@ export function KanbanBoard({
       {/* 2. Main content: Kanban board columns or list table */}
       {viewMode === "board" ? (
         <DragDropContext onDragEnd={actions.onDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 w-full items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-border/40 w-full items-stretch min-h-[500px]">
             {COLUMNS.map((col) => (
               <KanbanColumn
                 key={col.status}
                 status={col.status}
                 title={col.title}
-                description={col.description}
                 dotColor={col.dotColor}
                 workspaces={workspaces
                   .filter((w) => w.status === col.status)
