@@ -140,8 +140,7 @@ describe("Workspace Spec Mock Data Contract", () => {
     expect(MOCK_GITHUB_PR).toBeDefined();
     expect(MOCK_GITHUB_PR.number).toBe(4);
     expect(MOCK_GITHUB_PR.branch).toBe("review/phase-2");
-    expect(MOCK_GITHUB_PR.state).toBe("closed");
-    expect(MOCK_GITHUB_PR.merged).toBe(true);
+    expect(MOCK_GITHUB_PR.state).toBe("merged");
     expect(MOCK_GITHUB_PR.ciStatus).toBe("passed");
     expect(MOCK_GITHUB_PR.author.login).toBe("hogiabao7725");
     expect(MOCK_GITHUB_PR.author.avatarUrl).toBe("https://github.com/hogiabao7725.png");

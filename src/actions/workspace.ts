@@ -166,7 +166,7 @@ export async function linkWorkspaceGitHubPr(
   if (!parsed) {
     return {
       success: false,
-      error: "Invalid PR format. Enter a URL (e.g. https://github.com/owner/repo/pull/3) or #3",
+      error: "Please enter a valid PR URL or owner/repo#number",
     };
   }
 
@@ -178,7 +178,7 @@ export async function linkWorkspaceGitHubPr(
   if (!prInfo) {
     return {
       success: false,
-      error: `Could not find PR #${parsed.prNumber} in ${parsed.owner}/${parsed.repo}`,
+      error: "Pull request not found",
     };
   }
 

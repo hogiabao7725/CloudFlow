@@ -108,8 +108,7 @@ export const MOCK_GITHUB_PR = {
   number: 4,
   title:
     "refactor(core): streamline architecture schema, add manual rfc saving and github pr tracking",
-  state: "closed" as const,
-  merged: true,
+  state: "merged" as const,
   branch: "review/phase-2",
   ciStatus: "passed" as const,
   author: {

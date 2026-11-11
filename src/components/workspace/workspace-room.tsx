@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { WorkspaceItem, GitHubPrInfo } from "@/types/workspace";
+import { WorkspaceItem } from "@/types/workspace";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -110,7 +110,7 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
                   onSelectItem={handleSelectHeading}
                   documentTitle={workspace.name}
                   workspaceId={workspace.id}
-                  githubPr={workspace.githubPr as GitHubPrInfo | null}
+                  githubPr={workspace.githubPr}
                   onPrUpdated={(pr) => handleWorkspaceUpdated({ githubPr: pr })}
                 />
               </ResizablePanel>

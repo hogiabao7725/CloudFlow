@@ -23,7 +23,6 @@ import {
   refreshWorkspaceGitHubPr,
   unlinkWorkspaceGitHubPr,
 } from "@/actions/workspace";
-import { MOCK_GITHUB_PR } from "@/mock/workspace-spec-mock";
 
 interface WorkspaceGitHubPrProps {
   workspaceId: string;
@@ -107,14 +106,16 @@ export function WorkspaceGitHubPr({
 
   // Resolve PR lifecycle state (Merged, Closed, Open)
   const getPrLifecycle = () => {
-    if (!githubPr) return null;
-    if (githubPr.merged) {
-      return { label: "Merged", color: "text-purple-400", Icon: GitMerge };
+    switch (githubPr?.state) {
+      case "merged":
+        return { label: "Merged", color: "text-purple-400", Icon: GitMerge };
+      case "closed":
+        return { label: "Closed", color: "text-rose-400", Icon: GitPullRequestClosed };
+      case "open":
+        return { label: "Open", color: "text-emerald-400", Icon: GitPullRequest };
+      default:
+        return null;
     }
-    if (githubPr.state === "closed") {
-      return { label: "Closed", color: "text-rose-400", Icon: GitPullRequestClosed };
-    }
-    return { label: "Open", color: "text-emerald-400", Icon: GitPullRequest };
   };
 
   const lifecycle = getPrLifecycle();
@@ -279,7 +280,7 @@ export function WorkspaceGitHubPr({
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder="PR URL or #number..."
+                placeholder="GitHub PR URL or owner/repo#number..."
                 disabled={isPending}
                 className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none font-mono"
               />
@@ -309,18 +310,9 @@ export function WorkspaceGitHubPr({
                 </button>
               </div>
             </div>
-            <div className="flex justify-between text-xs text-muted-foreground px-0.5">
-              <span>Press Enter to link</span>
-              {process.env.NODE_ENV === "development" && (
-                <button
-                  type="button"
-                  onClick={() => onPrUpdated?.(MOCK_GITHUB_PR)}
-                  className="hover:underline text-zinc-400 cursor-pointer text-xs"
-                >
-                  Load Mock PR
-                </button>
-              )}
-            </div>
+            <p className="text-xs text-muted-foreground px-0.5">
+              Press Enter to link
+            </p>
           </form>
         ) : (
           /* STATE C: Empty trigger */

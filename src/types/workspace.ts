@@ -1,4 +1,4 @@
-import { WorkspaceStatus, type Prisma } from "@prisma/client";
+import { WorkspaceStatus } from "@prisma/client";
 
 export interface WorkspaceCreator {
   id: string;
@@ -11,8 +11,7 @@ export interface GitHubPrInfo {
   url: string;
   number: number;
   title: string;
-  state: "open" | "closed";
-  merged: boolean;
+  state: "open" | "merged" | "closed";
   branch: string;
   ciStatus?: "passed" | "failed" | "running" | "none";
   author?: {
@@ -38,7 +37,7 @@ export interface WorkspaceItem {
   clerkOrgId: string | null;
   creatorId: string;
   shareToken?: string | null;
-  githubPr?: GitHubPrInfo | Prisma.JsonValue | null;
+  githubPr?: GitHubPrInfo | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   creator?: WorkspaceCreator | null;

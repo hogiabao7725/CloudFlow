@@ -171,8 +171,7 @@ describe("Workspace Data Access Layer", () => {
         url: "https://github.com/hogiabao7725/CloudFlow/pull/3",
         number: 3,
         title: "feat: RFC specs",
-        state: "closed",
-        merged: true,
+        state: "merged",
         branch: "feat/room-rfc",
         ciStatus: "passed",
       };

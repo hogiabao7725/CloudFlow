@@ -313,15 +313,14 @@ describe("Workspace Server Actions", () => {
         url: "https://github.com/hogiabao7725/CloudFlow/pull/3",
         number: 3,
         title: "feat: RFC specs",
-        state: "closed" as const,
-        merged: true,
+        state: "merged" as const,
         branch: "feat/room-rfc",
         ciStatus: "passed" as const,
       };
       vi.mocked(fetchGitHubPr).mockResolvedValue(mockPr);
       vi.mocked(updateWorkspaceGitHubPr).mockResolvedValue({ id: "ws_1", githubPr: mockPr } as never);
 
-      const result = await linkWorkspaceGitHubPr("ws_1", "#3");
+      const result = await linkWorkspaceGitHubPr("ws_1", "https://github.com/hogiabao7725/CloudFlow/pull/3");
       expect(result.success).toBe(true);
       expect(result.githubPr).toEqual(mockPr);
       expect(updateWorkspaceGitHubPr).toHaveBeenCalledWith("ws_1", mockPr);
@@ -342,9 +341,9 @@ describe("Workspace Server Actions", () => {
       });
       vi.mocked(fetchGitHubPr).mockResolvedValue(null);
 
-      const result = await linkWorkspaceGitHubPr("ws_1", "#999");
+      const result = await linkWorkspaceGitHubPr("ws_1", "https://github.com/hogiabao7725/CloudFlow/pull/999");
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Could not find PR #999");
+      expect(result.error).toBe("Pull request not found");
     });
   });
 

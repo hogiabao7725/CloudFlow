@@ -1,25 +1,53 @@
 import type { GitHubPrInfo } from "@/types/workspace";
 
-export const DEFAULT_GITHUB_REPO = "hogiabao7725/CloudFlow";
-
 export interface ParsedPrInput {
   owner: string;
   repo: string;
   prNumber: number;
 }
 
+interface RawCheckRun {
+  status?: string;
+  conclusion?: string;
+}
+
+interface RawGitHubPr {
+  html_url: string;
+  number: number;
+  title: string;
+  state: string;
+  merged?: boolean;
+  merged_at?: string | null;
+  head?: { ref?: string; sha?: string };
+  user?: { login: string; avatar_url?: string };
+}
+
 /**
- * Parses a GitHub PR input string (URL, owner/repo#number, or #number).
+ * Builds standard GitHub REST API request headers.
  */
-export function parseGitHubPrInput(
-  input: string,
-  defaultRepo: string = DEFAULT_GITHUB_REPO
-): ParsedPrInput | null {
+export function getGitHubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "CloudFlow-DevOps-Platform",
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+  return headers;
+}
+
+/**
+ * Parses GitHub PR input: full URL or owner/repo#number format.
+ * Returns null if format is invalid or repository is missing.
+ */
+export function parseGitHubPrInput(input: string): ParsedPrInput | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
 
-  // Match full GitHub PR URL: https://github.com/:owner/:repo/pull/:number
-  const urlMatch = trimmed.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/i);
+  // 1. Full URL: https://github.com/:owner/:repo/pull/:number
+  const urlMatch = trimmed.match(
+    /(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s]+)\/pull\/(\d+)/i,
+  );
   if (urlMatch) {
     return {
       owner: urlMatch[1],
@@ -28,28 +56,81 @@ export function parseGitHubPrInput(
     };
   }
 
-  // Match owner/repo#number
-  const repoPrMatch = trimmed.match(/^([^/\s]+)\/([^#\s]+)#(\d+)$/);
-  if (repoPrMatch) {
+  // 2. Short format: owner/repo#number
+  const shortMatch = trimmed.match(/^([^/\s]+)\/([^#\s]+)#(\d+)$/);
+  if (shortMatch) {
     return {
-      owner: repoPrMatch[1],
-      repo: repoPrMatch[2],
-      prNumber: parseInt(repoPrMatch[3], 10),
-    };
-  }
-
-  // Match #number or plain number
-  const numMatch = trimmed.match(/^#?(\d+)$/);
-  if (numMatch) {
-    const [owner, repo] = defaultRepo.split("/");
-    return {
-      owner: owner || "hogiabao7725",
-      repo: repo || "CloudFlow",
-      prNumber: parseInt(numMatch[1], 10),
+      owner: shortMatch[1],
+      repo: shortMatch[2],
+      prNumber: parseInt(shortMatch[3], 10),
     };
   }
 
   return null;
+}
+
+/**
+ * Maps raw GitHub PR state into domain lifecycle state (merged, closed, open).
+ */
+export function resolvePrState(
+  prData: Pick<RawGitHubPr, "state" | "merged" | "merged_at">,
+): GitHubPrInfo["state"] {
+  if (prData.merged || prData.merged_at) {
+    return "merged";
+  }
+  if (prData.state === "closed") {
+    return "closed";
+  }
+  return "open";
+}
+
+/**
+ * Evaluates CI check runs conclusion into a unified status.
+ */
+export function evaluateCiStatus(
+  runs: RawCheckRun[],
+): GitHubPrInfo["ciStatus"] {
+  if (!runs || runs.length === 0) return "none";
+
+  const hasFailed = runs.some(
+    (r) =>
+      r.conclusion === "failure" ||
+      r.conclusion === "timed_out" ||
+      r.conclusion === "cancelled",
+  );
+  if (hasFailed) return "failed";
+
+  const hasRunning = runs.some(
+    (r) => r.status === "in_progress" || r.status === "queued",
+  );
+  if (hasRunning) return "running";
+
+  return "passed";
+}
+
+/**
+ * Fetches CI check runs for a commit SHA.
+ */
+export async function fetchCiCheckStatus(
+  owner: string,
+  repo: string,
+  sha?: string,
+): Promise<GitHubPrInfo["ciStatus"]> {
+  if (!sha) return "none";
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/commits/${sha}/check-runs`,
+      { headers: getGitHubHeaders(), next: { revalidate: 30 } },
+    );
+    if (!res.ok) return "none";
+
+    const data = await res.json();
+    const runs = (data?.check_runs as RawCheckRun[]) || [];
+    return evaluateCiStatus(runs);
+  } catch {
+    return "none";
+  }
 }
 
 /**
@@ -58,69 +139,23 @@ export function parseGitHubPrInput(
 export async function fetchGitHubPr(
   owner: string,
   repo: string,
-  prNumber: number
+  prNumber: number,
 ): Promise<GitHubPrInfo | null> {
   try {
-    const headers: Record<string, string> = {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "CloudFlow-DevOps-Platform",
-    };
-    if (process.env.GITHUB_TOKEN) {
-      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-    }
-
-    const prRes = await fetch(
+    const res = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-      { headers, next: { revalidate: 30 } }
+      { headers: getGitHubHeaders(), next: { revalidate: 30 } },
     );
+    if (!res.ok) return null;
 
-    if (!prRes.ok) {
-      return null;
-    }
-
-    const prData = await prRes.json();
-    const headSha = prData?.head?.sha;
-
-    let ciStatus: GitHubPrInfo["ciStatus"] = "none";
-
-    if (headSha) {
-      const checksRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/commits/${headSha}/check-runs`,
-        { headers, next: { revalidate: 30 } }
-      );
-
-      if (checksRes.ok) {
-        const checksData = await checksRes.json();
-        const runs = (checksData?.check_runs as Array<{ status?: string; conclusion?: string }>) || [];
-
-        if (runs.length > 0) {
-          const hasFailed = runs.some(
-            (r) =>
-              r.conclusion === "failure" ||
-              r.conclusion === "timed_out" ||
-              r.conclusion === "cancelled"
-          );
-          const hasRunning = runs.some(
-            (r) => r.status === "in_progress" || r.status === "queued"
-          );
-
-          if (hasFailed) {
-            ciStatus = "failed";
-          } else if (hasRunning) {
-            ciStatus = "running";
-          } else {
-            ciStatus = "passed";
-          }
-        }
-      }
-    }
+    const prData: RawGitHubPr = await res.json();
+    const ciStatus = await fetchCiCheckStatus(owner, repo, prData.head?.sha);
 
     return {
       url: prData.html_url,
       number: prData.number,
       title: prData.title,
-      state: prData.state,
-      merged: Boolean(prData.merged || prData.merged_at),
+      state: resolvePrState(prData),
       branch: prData.head?.ref || "unknown",
       ciStatus,
       ...(prData.user
