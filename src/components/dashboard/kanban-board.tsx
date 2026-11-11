@@ -30,12 +30,12 @@ const COLUMNS = [
   {
     status: WorkspaceStatus.PLANNING,
     title: "Planning",
-    dotColor: "bg-slate-400",
+    dotColor: "bg-zinc-400",
   },
   {
     status: WorkspaceStatus.IN_PROGRESS,
     title: "In Progress",
-    dotColor: "bg-cyan-400",
+    dotColor: "bg-sky-400",
   },
   {
     status: WorkspaceStatus.PAUSED,
@@ -69,7 +69,7 @@ export function KanbanBoard({
     return (
       <div className="flex flex-col gap-6 w-full animate-pulse">
         <div className="h-11 w-full rounded-lg bg-card/60" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-border/40 w-full min-h-[500px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-white/10 w-full min-h-[500px]">
           <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
           <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
           <div className="h-full rounded-lg bg-card/10 xl:px-4 xl:first:pl-0 xl:last:pr-0" />
@@ -95,7 +95,7 @@ export function KanbanBoard({
       {/* 2. Main content: Kanban board columns or list table */}
       {viewMode === "board" ? (
         <DragDropContext onDragEnd={actions.onDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-border/40 w-full items-stretch min-h-[500px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-0 xl:divide-x xl:divide-white/10 w-full items-stretch min-h-[500px]">
             {COLUMNS.map((col) => (
               <KanbanColumn
                 key={col.status}

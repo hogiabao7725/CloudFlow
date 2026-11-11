@@ -12,8 +12,8 @@ interface KanbanListViewProps {
  */
 export function KanbanListView({ workspaces }: KanbanListViewProps) {
   return (
-    <div className="rounded-lg border border-border/70 bg-card/60 overflow-hidden shadow-xs">
-      <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-border/80 text-xs font-bold text-muted-foreground uppercase tracking-wider bg-secondary/30">
+    <div className="rounded-lg border border-white/10 bg-card/90 overflow-hidden shadow-xs">
+      <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-white/10 text-xs font-bold text-zinc-400 uppercase tracking-wider bg-white/[0.03]">
         <span className="col-span-4 sm:col-span-4">Workspace & Description</span>
         <span className="col-span-2 sm:col-span-2">Stage</span>
         <span className="col-span-2 hidden sm:block">Creator</span>
@@ -21,7 +21,7 @@ export function KanbanListView({ workspaces }: KanbanListViewProps) {
         <span className="col-span-4 sm:col-span-4 md:col-span-2 text-right">Updated</span>
       </div>
 
-      <div className="divide-y divide-border/60">
+      <div className="divide-y divide-white/10">
         {workspaces.length > 0 ? (
           workspaces.map((ws) => {
             const creatorName =
@@ -33,20 +33,20 @@ export function KanbanListView({ workspaces }: KanbanListViewProps) {
               <Link
                 key={ws.id}
                 href={`/workspaces/${ws.id}`}
-                className="grid grid-cols-12 gap-4 px-6 h-16 items-center hover:bg-secondary/40 transition-colors group"
+                className="grid grid-cols-12 gap-4 px-6 h-16 items-center hover:bg-white/[0.04] transition-colors group"
               >
                 <div className="col-span-4 sm:col-span-4 pr-4 flex flex-col justify-center min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <span
-                      className="text-sm font-bold text-foreground group-hover:underline truncate"
+                      className="text-sm font-bold text-white group-hover:underline truncate"
                       title={ws.name}
                     >
                       {ws.name}
                     </span>
-                    <ArrowUpRight className="size-3.5 opacity-0 group-hover:opacity-100 text-muted-foreground transition-opacity shrink-0" />
+                    <ArrowUpRight className="size-3.5 opacity-0 group-hover:opacity-100 text-zinc-400 transition-opacity shrink-0" />
                   </div>
                   <p
-                    className="text-xs text-muted-foreground truncate mt-0.5"
+                    className="text-xs text-zinc-400 truncate mt-0.5"
                     title={ws.description || ""}
                   >
                     {ws.description || "No description provided"}
@@ -54,16 +54,16 @@ export function KanbanListView({ workspaces }: KanbanListViewProps) {
                 </div>
 
                 <div className="col-span-2 sm:col-span-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-secondary text-foreground">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/10 text-white border border-white/10">
                     <span
                       className={`size-1.5 rounded-full ${
                         ws.status === "DONE"
                           ? "bg-emerald-400"
                           : ws.status === "IN_PROGRESS"
-                          ? "bg-cyan-400"
+                          ? "bg-sky-400"
                           : ws.status === "PAUSED"
                           ? "bg-amber-400"
-                          : "bg-slate-400"
+                          : "bg-zinc-400"
                       }`}
                     />
                     <span>{ws.status.replace("_", " ")}</span>
@@ -76,23 +76,23 @@ export function KanbanListView({ workspaces }: KanbanListViewProps) {
                     <img
                       src={ws.creator.imageUrl}
                       alt={creatorName}
-                      className="size-5 rounded-full object-cover"
+                      className="size-5 rounded-full object-cover ring-1 ring-white/10"
                     />
                   ) : (
-                    <span className="flex size-5 items-center justify-center rounded-full bg-secondary text-[9px] font-bold text-foreground">
+                    <span className="flex size-5 items-center justify-center rounded-full bg-white/10 text-[9px] font-bold text-white">
                       {creatorName[0]?.toUpperCase()}
                     </span>
                   )}
-                  <span className="text-xs text-muted-foreground truncate max-w-28">
+                  <span className="text-xs text-zinc-300 truncate max-w-28">
                     {creatorName}
                   </span>
                 </div>
 
-                <div className="col-span-2 hidden md:block text-right text-xs text-muted-foreground tabular-nums">
+                <div className="col-span-2 hidden md:block text-right text-xs text-zinc-400 tabular-nums">
                   {createdDate}
                 </div>
 
-                <div className="col-span-4 sm:col-span-4 md:col-span-2 text-right text-xs text-foreground/80 font-medium tabular-nums">
+                <div className="col-span-4 sm:col-span-4 md:col-span-2 text-right text-xs text-zinc-300 font-medium tabular-nums">
                   {updatedDate}
                 </div>
               </Link>

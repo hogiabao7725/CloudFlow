@@ -8,11 +8,35 @@ import {
   MoreVertical,
   Trash2,
   Edit2,
-  Network,
-  FileText,
   ArrowUpRight,
+  GitPullRequest,
+  GitMerge,
+  GitPullRequestClosed,
 } from "lucide-react";
 import { WorkspaceItem } from "@/types/workspace";
+
+function formatCompactRelativeTime(dateInput: Date | string): string {
+  try {
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "recently";
+    const now = new Date();
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffSec < 60) return "just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "yesterday";
+    if (diffDays < 30) return `${diffDays}d ago`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths < 12) return `${diffMonths}mo ago`;
+    const diffYears = Math.floor(diffDays / 365);
+    return `${diffYears}y ago`;
+  } catch {
+    return "recently";
+  }
+}
 
 export interface WorkspaceCardProps {
   workspace: WorkspaceItem;
@@ -22,8 +46,10 @@ export interface WorkspaceCardProps {
 }
 
 /**
- * Visual card item representing an architecture workspace inside a Kanban column.
- * Pure presentational component that delegates mutation triggers to the parent.
+ * Clean 3-tier Kanban Workspace Card (Linear / Raycast minimalist style).
+ * - Tier 1: Title + Context Menu (visible on hover)
+ * - Tier 2: 1-line concise description (rendered only when present)
+ * - Tier 3: Unified Footer (Git PR info on left, Avatar & relative time on right)
  */
 export function WorkspaceCard({
   workspace,
@@ -44,8 +70,8 @@ export function WorkspaceCard({
     "A"
   ).toUpperCase();
 
-  const createdDate = format(new Date(workspace.createdAt), "dd/MM/yyyy HH:mm");
-  const updatedDate = format(new Date(workspace.updatedAt), "dd/MM/yyyy HH:mm");
+  const fullUpdatedDate = format(new Date(workspace.updatedAt), "dd/MM/yyyy HH:mm");
+  const relativeUpdated = formatCompactRelativeTime(workspace.updatedAt);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent navigation if clicking inside the actions dropdown menu
@@ -67,26 +93,26 @@ export function WorkspaceCard({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={handleCardClick}
-          className={`group relative flex flex-col justify-between h-48 min-h-48 max-h-48 w-full shrink-0 rounded-lg border p-4 transition-all duration-150 select-none cursor-pointer ${
+          className={`group relative flex flex-col justify-between rounded-lg border p-5 min-h-[148px] transition-all duration-150 select-none cursor-pointer ${
             snapshot.isDragging
-              ? "border-foreground/80 bg-card shadow-xl shadow-black/60 scale-[1.02] z-50 ring-1 ring-foreground/20"
-              : "border-border/70 bg-card/60 hover:border-foreground/30 hover:bg-card hover:shadow-md hover:shadow-black/20"
+              ? "border-white/80 bg-card shadow-2xl shadow-black/80 scale-[1.02] z-50 ring-1 ring-white/30"
+              : "border-white/10 bg-card hover:border-white/30 hover:shadow-lg hover:shadow-black/40 hover:-translate-y-0.5"
           }`}
         >
-          {/* Header: Title and Action Menu */}
-          <div className="w-full shrink-0">
-            <div className="flex items-center justify-between gap-2 min-w-0 h-7">
+          {/* TẦNG 1 & 2: Header (Title + Actions) & Description */}
+          <div className="w-full">
+            <div className="flex items-center justify-between gap-2 min-w-0">
               <div
                 title={workspace.name}
                 className="flex items-center gap-1.5 min-w-0 flex-1 group/title"
               >
-                <span className="truncate text-base font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
+                <span className="truncate text-[15px] font-semibold text-zinc-100 tracking-tight leading-snug group-hover:text-white transition-colors">
                   {workspace.name}
                 </span>
-                <ArrowUpRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground shrink-0" />
+                <ArrowUpRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-400 shrink-0" />
               </div>
 
-              {/* Context menu trigger */}
+              {/* Context menu trigger - visible on group hover or when menu is open */}
               <div className="relative shrink-0" data-prevent-card-click="true">
                 <button
                   type="button"
@@ -95,7 +121,9 @@ export function WorkspaceCard({
                     setMenuOpen(!menuOpen);
                   }}
                   aria-label="Workspace actions"
-                  className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                  className={`rounded p-1 text-zinc-400 hover:bg-white/10 hover:text-white transition-all ${
+                    menuOpen ? "opacity-100 bg-white/10 text-white" : "opacity-0 group-hover:opacity-100"
+                  }`}
                 >
                   <MoreVertical className="size-4" />
                 </button>
@@ -110,7 +138,7 @@ export function WorkspaceCard({
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg border border-border bg-card p-1 shadow-lg shadow-black/30 text-xs"
+                      className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg border border-white/10 bg-card p-1 shadow-2xl shadow-black/60 text-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
@@ -120,9 +148,9 @@ export function WorkspaceCard({
                           setMenuOpen(false);
                           onRename?.(workspace);
                         }}
-                        className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-foreground hover:bg-secondary text-left font-medium"
+                        className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-white hover:bg-white/10 text-left font-medium"
                       >
-                        <Edit2 className="size-3.5 text-muted-foreground" />
+                        <Edit2 className="size-3.5 text-zinc-400" />
                         <span>Rename</span>
                       </button>
                       <button
@@ -132,7 +160,7 @@ export function WorkspaceCard({
                           setMenuOpen(false);
                           onDelete?.(workspace);
                         }}
-                        className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-destructive hover:bg-destructive/10 text-left font-medium"
+                        className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-rose-400 hover:bg-rose-500/10 text-left font-medium"
                       >
                         <Trash2 className="size-3.5" />
                         <span>Delete</span>
@@ -143,70 +171,90 @@ export function WorkspaceCard({
               </div>
             </div>
 
-            {/* Description Slot: Fixed height with 2-line clamp */}
-            <div className="h-10 mt-2 overflow-hidden shrink-0">
-              {workspace.description ? (
-                <p
-                  className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-5"
-                  title={workspace.description}
-                >
-                  {workspace.description}
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground/40 italic flex items-center h-full">
-                  No description provided
-                </p>
-              )}
-            </div>
+            {/* Description: 2-line clamp with relaxed leading, or fallback placeholder for visual consistency */}
+            {workspace.description ? (
+              <p
+                className="text-[13px] text-zinc-400 line-clamp-2 leading-relaxed mt-2.5"
+                title={workspace.description}
+              >
+                {workspace.description}
+              </p>
+            ) : (
+              <p className="text-[13px] text-zinc-600/70 italic line-clamp-1 leading-relaxed mt-2.5 select-none">
+                No description provided
+              </p>
+            )}
           </div>
 
-          {/* Middle: Artifact Tags & Created Date */}
-          <div className="flex items-center justify-between h-6 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
-                <Network className="size-3.5" />
-                <span>Canvas</span>
-              </span>
-              <span className="inline-flex items-center gap-1 rounded border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300">
-                <FileText className="size-3.5" />
-                <span>Doc</span>
-              </span>
-            </div>
+          {/* TẦNG 3: Footer tinh gọn (Git PR / status bên trái, User + Time bên phải) */}
+          <div className="flex items-center justify-between gap-2 mt-5 pt-0 min-w-0">
+            {/* Git PR Info hoặc Symmetrical Placeholder khi chưa có PR */}
+            {workspace.githubPr ? (
+              <div
+                className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden"
+                title={`PR #${workspace.githubPr.number}: ${workspace.githubPr.title} (${workspace.githubPr.branch})`}
+              >
+                {workspace.githubPr.state === "merged" ? (
+                  <GitMerge className="size-4 text-purple-400 shrink-0" />
+                ) : workspace.githubPr.state === "closed" ? (
+                  <GitPullRequestClosed className="size-4 text-zinc-400 shrink-0" />
+                ) : (
+                  <GitPullRequest className="size-4 text-emerald-400 shrink-0" />
+                )}
+                <span className="text-xs font-mono font-semibold text-zinc-200 shrink-0">
+                  #{workspace.githubPr.number}
+                </span>
+                <span className="text-xs font-mono text-zinc-400 truncate max-w-32">
+                  {workspace.githubPr.branch}
+                </span>
+                {workspace.githubPr.ciStatus === "passed" && (
+                  <span className="size-2 rounded-full bg-emerald-400 shrink-0" title="CI Passed" />
+                )}
+                {workspace.githubPr.ciStatus === "failed" && (
+                  <span className="size-2 rounded-full bg-rose-400 shrink-0" title="CI Failed" />
+                )}
+                {workspace.githubPr.ciStatus === "running" && (
+                  <span className="size-2 rounded-full bg-amber-400 animate-pulse shrink-0" title="CI Running" />
+                )}
+              </div>
+            ) : (
+              <div
+                className="flex items-center gap-1.5 min-w-0 flex-1 text-zinc-500 overflow-hidden"
+                title="No GitHub PR linked to this workspace"
+              >
+                <GitPullRequest className="size-4 text-zinc-600 shrink-0" />
+                <span className="text-xs font-mono tracking-tight text-zinc-500 truncate">
+                  No PR linked
+                </span>
+              </div>
+            )}
 
-            <span
-              className="text-xs text-muted-foreground/75 tabular-nums shrink-0"
-              title={`Created at ${createdDate}`}
-            >
-              Created: {createdDate}
-            </span>
-          </div>
-
-          {/* Footer: Creator & Updated Date */}
-          <div className="flex items-center justify-between border-t border-border/50 pt-2.5 shrink-0 gap-2 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+            {/* Avatar & thời gian cập nhật */}
+            <div className="flex items-center gap-1.5 shrink-0">
               {workspace.creator?.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={workspace.creator.imageUrl}
                   alt={creatorName}
-                  className="size-5.5 rounded-full object-cover shrink-0 ring-1 ring-border"
+                  className="size-5 rounded-full object-cover shrink-0 ring-1 ring-white/10"
+                  title={`Creator: ${creatorName}`}
                 />
               ) : (
-                <span className="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-foreground">
+                <span
+                  className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-zinc-300"
+                  title={`Creator: ${creatorName}`}
+                >
                   {avatarLetter}
                 </span>
               )}
-              <span className="truncate font-medium text-foreground/90 text-xs">
-                {creatorName}
+              <span
+                suppressHydrationWarning
+                className="text-xs font-medium text-zinc-400 tabular-nums shrink-0"
+                title={`Last updated at ${fullUpdatedDate}`}
+              >
+                {relativeUpdated}
               </span>
             </div>
-
-            <span
-              className="text-xs font-medium text-foreground/80 tabular-nums shrink-0"
-              title={`Last updated at ${updatedDate}`}
-            >
-              Updated: {updatedDate}
-            </span>
           </div>
         </div>
       )}

@@ -28,8 +28,8 @@ export function KanbanColumn({
       <div className="mb-3 flex items-center justify-between px-1">
         <div className="flex items-center gap-2.5">
           <span className={`size-2.5 rounded-full ${dotColor}`} />
-          <h3 className="text-sm font-bold tracking-tight text-foreground">{title}</h3>
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-md border border-border/50 bg-secondary/80 px-1.5 text-xs font-semibold tabular-nums text-foreground/90">
+          <h3 className="text-sm font-bold tracking-tight text-white">{title}</h3>
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-md border border-white/10 bg-white/10 px-1.5 text-xs font-bold tabular-nums text-white">
             {workspaces.length}
           </span>
         </div>
@@ -43,7 +43,7 @@ export function KanbanColumn({
             {...provided.droppableProps}
             className={`flex flex-col gap-2.5 flex-1 min-h-95 rounded-lg p-1 transition-colors duration-150 ${
               snapshot.isDraggingOver
-                ? "bg-secondary/30 ring-1 ring-border/60"
+                ? "bg-white/[0.04] ring-1 ring-white/20"
                 : "bg-transparent"
             }`}
           >
@@ -59,9 +59,9 @@ export function KanbanColumn({
             {provided.placeholder}
 
             {workspaces.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/30 py-10 min-h-36 text-center">
-                <span className="text-xs font-medium text-muted-foreground/60">No workspaces</span>
-                <span className="text-[11px] text-muted-foreground/40 mt-0.5">Drop initiatives here</span>
+              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-white/[0.02] py-10 min-h-[148px] text-center transition-colors">
+                <span className="text-sm font-semibold text-zinc-200">No workspaces</span>
+                <span className="text-xs text-zinc-400 mt-1">Drop initiatives here</span>
               </div>
             )}
           </div>

@@ -19,18 +19,18 @@ export default async function DashboardPage() {
   const displayName = user.name || user.email.split("@")[0] || "Explorer";
 
   return (
-    <div className="flex flex-1 flex-col px-6 sm:px-10 lg:px-12 py-8 max-w-[1720px] mx-auto w-full">
+    <div className="flex flex-1 flex-col px-6 sm:px-10 lg:px-12 py-8 max-w-[1480px] mx-auto w-full">
       {/* Scope and Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-border/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-white/10">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-zinc-400 mb-2">
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
             <span>{displayName}&apos;s Workspace</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             Architecture Initiatives
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
+          <p className="mt-2 text-sm sm:text-base text-zinc-400 leading-relaxed">
             Organize, track, and collaborate on system architecture workspaces
             from concept to delivery.
           </p>
