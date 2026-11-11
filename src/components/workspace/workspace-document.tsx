@@ -227,10 +227,10 @@ export function WorkspaceDocument({
         {/* RAW / EDITOR PANE */}
         {(viewMode === "raw" || viewMode === "split") && (
           <div
-            className={`h-full overflow-y-auto p-6 bg-card/10 ${
+            className={`h-full overflow-y-auto bg-card/10 ${
               viewMode === "split"
-                ? "w-1/2 border-r border-border/80"
-                : "w-full max-w-4xl mx-auto"
+                ? "w-1/2 p-6 border-r border-border/80"
+                : "w-full max-w-6xl mx-auto p-6 sm:px-10 lg:px-12"
             }`}
           >
             <textarea
@@ -246,8 +246,10 @@ export function WorkspaceDocument({
         {/* PREVIEW PANE */}
         {(viewMode === "preview" || viewMode === "split") && (
           <div
-            className={`h-full overflow-y-auto px-6 py-6 sm:px-8 scroll-smooth ${
-              viewMode === "split" ? "w-1/2" : "w-full max-w-4xl mx-auto"
+            className={`h-full overflow-y-auto py-6 scroll-smooth ${
+              viewMode === "split"
+                ? "w-1/2 px-6 sm:px-8"
+                : "w-full max-w-6xl mx-auto px-6 sm:px-10 lg:px-12"
             }`}
           >
             {/* Document Header Meta */}
