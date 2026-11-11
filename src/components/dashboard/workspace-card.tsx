@@ -67,10 +67,10 @@ export function WorkspaceCard({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={handleCardClick}
-          className={`group relative flex flex-col justify-between h-50 min-h-50 max-h-50 w-full shrink-0 rounded-2xl border p-5 transition-all duration-200 select-none cursor-pointer ${
+          className={`group relative flex flex-col justify-between h-48 min-h-48 max-h-48 w-full shrink-0 rounded-lg border p-4 transition-all duration-150 select-none cursor-pointer ${
             snapshot.isDragging
-              ? "border-foreground/80 bg-card shadow-2xl shadow-black/70 scale-[1.03] z-50 ring-2 ring-foreground/20"
-              : "border-border/80 bg-card hover:border-foreground/40 hover:bg-card hover:shadow-lg hover:shadow-black/20"
+              ? "border-foreground/80 bg-card shadow-xl shadow-black/60 scale-[1.02] z-50 ring-1 ring-foreground/20"
+              : "border-border/70 bg-card/60 hover:border-foreground/30 hover:bg-card hover:shadow-md hover:shadow-black/20"
           }`}
         >
           {/* Header: Title and Action Menu */}
@@ -163,11 +163,11 @@ export function WorkspaceCard({
           {/* Middle: Artifact Tags & Created Date */}
           <div className="flex items-center justify-between h-6 shrink-0">
             <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
+              <span className="inline-flex items-center gap-1 rounded border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
                 <Network className="size-3.5" />
                 <span>Canvas</span>
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300">
+              <span className="inline-flex items-center gap-1 rounded border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300">
                 <FileText className="size-3.5" />
                 <span>Doc</span>
               </span>

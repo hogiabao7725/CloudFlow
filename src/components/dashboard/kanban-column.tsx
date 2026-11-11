@@ -25,15 +25,15 @@ export function KanbanColumn({
   onDelete,
 }: KanbanColumnProps) {
   return (
-    <div className="flex flex-col rounded-2xl border border-border/80 bg-card/40 p-4 min-w-75 w-full flex-1">
+    <div className="flex flex-col rounded-lg border border-border/70 bg-card/40 p-3.5 min-w-75 w-full flex-1">
       {/* Column Header */}
-      <div className="mb-4 px-1 pt-1">
+      <div className="mb-3.5 px-0.5 pt-0.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className={`size-2.5 rounded-full ${dotColor} shadow-[0_0_8px_currentColor]`} />
-            <h3 className="text-base font-bold tracking-tight text-foreground">{title}</h3>
+            <span className={`size-2 rounded-full ${dotColor} shadow-[0_0_8px_currentColor]`} />
+            <h3 className="text-sm font-bold tracking-tight text-foreground">{title}</h3>
           </div>
-          <span className="flex min-w-6 h-6 items-center justify-center rounded-full bg-secondary px-2 text-xs font-bold text-foreground">
+          <span className="flex min-w-5 h-5 items-center justify-center rounded-md bg-secondary px-1.5 text-xs font-semibold tabular-nums text-foreground">
             {workspaces.length}
           </span>
         </div>
@@ -46,7 +46,7 @@ export function KanbanColumn({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex flex-col gap-3 flex-1 min-h-95 rounded-xl p-1 transition-colors duration-200 ${
+            className={`flex flex-col gap-3 flex-1 min-h-95 rounded-lg p-0.5 transition-colors duration-200 ${
               snapshot.isDraggingOver ? "bg-secondary/40 ring-1 ring-foreground/10" : ""
             }`}
           >
@@ -62,7 +62,7 @@ export function KanbanColumn({
             {provided.placeholder}
 
             {workspaces.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-14 text-center">
+              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 py-12 text-center">
                 <span className="text-sm font-semibold text-muted-foreground">No workspaces</span>
                 <span className="text-xs text-muted-foreground/60 mt-1">Drop initiatives here</span>
               </div>

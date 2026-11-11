@@ -12,7 +12,7 @@ interface KanbanListViewProps {
  */
 export function KanbanListView({ workspaces }: KanbanListViewProps) {
   return (
-    <div className="rounded-2xl border border-border/80 bg-card/60 overflow-hidden shadow-sm">
+    <div className="rounded-lg border border-border/70 bg-card/60 overflow-hidden shadow-xs">
       <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-border/80 text-xs font-bold text-muted-foreground uppercase tracking-wider bg-secondary/30">
         <span className="col-span-4 sm:col-span-4">Workspace & Description</span>
         <span className="col-span-2 sm:col-span-2">Stage</span>

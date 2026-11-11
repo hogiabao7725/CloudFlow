@@ -92,31 +92,18 @@ describe("useKanban Hook", () => {
     vi.clearAllMocks();
   });
 
-  it("should initialize with all workspaces and compute accurate metrics", () => {
+  it("should initialize with all workspaces correctly", () => {
     const kanban = renderUseKanban(mockWorkspaces);
 
     expect(kanban.workspaces).toHaveLength(4);
     expect(kanban.allWorkspaces).toHaveLength(4);
-    expect(kanban.metrics).toEqual({
-      total: 4,
-      planning: 1,
-      inProgress: 1,
-      paused: 1,
-      done: 1,
-    });
   });
 
-  it("should return zeros for metrics when given empty initial workspaces", () => {
+  it("should handle empty initial workspaces", () => {
     const kanban = renderUseKanban([]);
 
     expect(kanban.workspaces).toHaveLength(0);
-    expect(kanban.metrics).toEqual({
-      total: 0,
-      planning: 0,
-      inProgress: 0,
-      paused: 0,
-      done: 0,
-    });
+    expect(kanban.allWorkspaces).toHaveLength(0);
   });
 
   it("should expose filter controls and actions interface", () => {

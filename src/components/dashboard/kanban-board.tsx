@@ -6,7 +6,6 @@ import { WorkspaceStatus } from "@prisma/client";
 import { WorkspaceItem } from "@/types/workspace";
 import { useKanban } from "@/hooks/use-kanban";
 import { KanbanColumn } from "./kanban-column";
-import { KanbanMetrics } from "./kanban-metrics";
 import { KanbanToolbar } from "./kanban-toolbar";
 import { KanbanListView } from "./kanban-list-view";
 import { KanbanDialogs } from "./kanban-dialogs";
@@ -68,24 +67,20 @@ export function KanbanBoard({
   const [deleteTarget, setDeleteTarget] = useState<WorkspaceItem | null>(null);
 
   // Centralized state, filter, and action hook
-  const { workspaces, metrics, filter, actions } = useKanban(initialWorkspaces);
+  const { workspaces, filter, actions } = useKanban(initialWorkspaces);
 
   if (!isMounted) {
     return (
       <div className="flex flex-col gap-6 w-full animate-pulse">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full h-20 bg-card/40 rounded-xl" />
-        <div className="h-12 w-full rounded-xl bg-card/60" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full h-96 bg-card/40 rounded-2xl" />
+        <div className="h-11 w-full rounded-lg bg-card/60" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full h-96 bg-card/40 rounded-lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full">
-      {/* 1. Initiative status metrics */}
-      <KanbanMetrics metrics={metrics} />
-
-      {/* 2. Search, filters, view toggle, and creation trigger */}
+    <div className="flex flex-col gap-6 w-full">
+      {/* 1. Search, filters, view toggle, and creation trigger */}
       <KanbanToolbar
         search={filter.search}
         onSearchChange={filter.setSearch}
@@ -96,10 +91,10 @@ export function KanbanBoard({
         onOpenCreateModal={() => setModalOpen(true)}
       />
 
-      {/* 3. Main content: Kanban board columns or list table */}
+      {/* 2. Main content: Kanban board columns or list table */}
       {viewMode === "board" ? (
         <DragDropContext onDragEnd={actions.onDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 w-full items-start">
             {COLUMNS.map((col) => (
               <KanbanColumn
                 key={col.status}

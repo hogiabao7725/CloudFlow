@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col px-6 sm:px-10 lg:px-12 py-8 max-w-[1720px] mx-auto w-full">
       {/* Scope and Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-border/70">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
             <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />

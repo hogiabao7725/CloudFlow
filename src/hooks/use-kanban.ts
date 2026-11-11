@@ -52,7 +52,6 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   // Pure data computations
-  const metrics = calculateMetrics(workspaces);
   const filteredWorkspaces = filterWorkspaces(workspaces, search, statusFilter);
 
   // Actions
@@ -148,7 +147,6 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
   return {
     workspaces: filteredWorkspaces,
     allWorkspaces: workspaces,
-    metrics,
     filter: {
       search,
       setSearch,
@@ -162,23 +160,6 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
       deleteWorkspace: deleteWorkspaceAction,
     },
   };
-}
-
-function calculateMetrics(workspaces: WorkspaceItem[]) {
-  const counts = {
-    total: workspaces.length,
-    planning: 0,
-    inProgress: 0,
-    paused: 0,
-    done: 0,
-  };
-  for (const w of workspaces) {
-    if (w.status === WorkspaceStatus.PLANNING) counts.planning++;
-    else if (w.status === WorkspaceStatus.IN_PROGRESS) counts.inProgress++;
-    else if (w.status === WorkspaceStatus.PAUSED) counts.paused++;
-    else if (w.status === WorkspaceStatus.DONE) counts.done++;
-  }
-  return counts;
 }
 
 function filterWorkspaces(
