@@ -3,39 +3,28 @@
 import { getAuthedWorkspace } from "./workspace";
 import { upsertDocMarkdown, findDocByWorkspaceId } from "@/data/doc";
 
-export interface SaveDocResult {
-  success: boolean;
-  error?: string;
-  doc?: unknown;
-}
-
-export interface GetDocResult {
+export interface DocActionResult {
   success: boolean;
   error?: string;
   markdown?: string | null;
   doc?: unknown;
 }
 
+export type SaveDocResult = DocActionResult;
+export type GetDocResult = DocActionResult;
+
 /**
- * Server Action to save document markdown content for a given workspace.
- * Validates authentication and workspace access permissions.
+ * Save technical document markdown for a workspace.
  */
 export async function saveDocMarkdown(
   workspaceId: string,
   markdown: string
-): Promise<SaveDocResult> {
-  if (!workspaceId || typeof workspaceId !== "string") {
-    return { success: false, error: "Invalid workspace ID" };
-  }
+): Promise<DocActionResult> {
+  if (!workspaceId) return { success: false, error: "Invalid workspace ID" };
+  if (typeof markdown !== "string") return { success: false, error: "Invalid markdown content" };
 
-  if (typeof markdown !== "string") {
-    return { success: false, error: "Invalid markdown content" };
-  }
-
-  const result = await getAuthedWorkspace(workspaceId);
-  if ("error" in result) {
-    return { success: false, error: result.error };
-  }
+  const auth = await getAuthedWorkspace(workspaceId);
+  if ("error" in auth) return { success: false, error: auth.error };
 
   try {
     const doc = await upsertDocMarkdown(workspaceId, markdown);
@@ -47,19 +36,15 @@ export async function saveDocMarkdown(
 }
 
 /**
- * Server Action to fetch doc markdown for a given workspace.
+ * Fetch technical document markdown for a workspace.
  */
 export async function getDocMarkdown(
   workspaceId: string
-): Promise<GetDocResult> {
-  if (!workspaceId || typeof workspaceId !== "string") {
-    return { success: false, error: "Invalid workspace ID" };
-  }
+): Promise<DocActionResult> {
+  if (!workspaceId) return { success: false, error: "Invalid workspace ID" };
 
-  const result = await getAuthedWorkspace(workspaceId);
-  if ("error" in result) {
-    return { success: false, error: result.error };
-  }
+  const auth = await getAuthedWorkspace(workspaceId);
+  if ("error" in auth) return { success: false, error: auth.error };
 
   try {
     const doc = await findDocByWorkspaceId(workspaceId);

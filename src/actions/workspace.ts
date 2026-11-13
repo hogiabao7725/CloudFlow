@@ -40,8 +40,7 @@ export async function createWorkspace(input: CreateWorkspaceInput) {
   const auth = await getAuthenticatedUser();
   if (!auth) return { success: false, error: "Unauthorized" };
 
-  const targetOrgId =
-    input.clerkOrgId !== undefined ? input.clerkOrgId : (auth.orgId || null);
+  const targetOrgId = input.clerkOrgId ?? auth.orgId ?? null;
 
   const highestPos = await getHighestPosition(WorkspaceStatus.PLANNING, {
     userId: auth.user.id,
@@ -68,8 +67,7 @@ export async function getWorkspaces(filterOrgId?: string | null) {
   const auth = await getAuthenticatedUser();
   if (!auth) return { success: false, error: "Unauthorized", workspaces: [] };
 
-  const targetOrgId =
-    filterOrgId !== undefined ? filterOrgId : (auth.orgId || null);
+  const targetOrgId = filterOrgId !== undefined ? filterOrgId : (auth.orgId || null);
 
   const workspaces = await findWorkspaces({
     userId: auth.user.id,
@@ -80,7 +78,7 @@ export async function getWorkspaces(filterOrgId?: string | null) {
 }
 
 /**
- * Fetches a single workspace by ID with security check.
+ * Fetches a single workspace by ID with authorization check.
  */
 export async function getWorkspaceById(id: string) {
   const result = await getAuthedWorkspace(id);
@@ -104,10 +102,7 @@ export async function updateWorkspaceStatus(
   const result = await getAuthedWorkspace(id);
   if ("error" in result) return { success: false, error: result.error };
 
-  const updated = await updateWorkspaceData(id, {
-    status,
-    ...(position !== undefined ? { position } : {}),
-  });
+  const updated = await updateWorkspaceData(id, { status, position });
 
   revalidateWorkspacePaths();
   return { success: true, workspace: updated as unknown as WorkspaceItem };
@@ -125,10 +120,8 @@ export async function updateWorkspace(id: string, data: UpdateWorkspaceInput) {
   if ("error" in result) return { success: false, error: result.error };
 
   const updated = await updateWorkspaceData(id, {
-    ...(data.name !== undefined ? { name: data.name.trim() } : {}),
-    ...(data.description !== undefined
-      ? { description: data.description }
-      : {}),
+    name: data.name?.trim(),
+    description: data.description,
   });
 
   revalidateWorkspacePaths();
@@ -136,7 +129,7 @@ export async function updateWorkspace(id: string, data: UpdateWorkspaceInput) {
 }
 
 /**
- * Deletes a workspace and its cascaded records.
+ * Deletes a workspace and its associated records.
  */
 export async function deleteWorkspace(id: string) {
   const result = await getAuthedWorkspace(id);
@@ -149,16 +142,12 @@ export async function deleteWorkspace(id: string) {
 }
 
 /**
- * Server Action to link a GitHub Pull Request to a workspace.
+ * Links a GitHub Pull Request to a workspace.
  */
 export async function linkWorkspaceGitHubPr(
   workspaceId: string,
   prInput: string
 ) {
-  if (!workspaceId || typeof workspaceId !== "string") {
-    return { success: false, error: "Invalid workspace ID" };
-  }
-
   const result = await getAuthedWorkspace(workspaceId);
   if ("error" in result) return { success: false, error: result.error };
 
@@ -170,41 +159,29 @@ export async function linkWorkspaceGitHubPr(
     };
   }
 
-  const prInfo = await fetchGitHubPr(
-    parsed.owner,
-    parsed.repo,
-    parsed.prNumber
-  );
+  const prInfo = await fetchGitHubPr(parsed.owner, parsed.repo, parsed.prNumber);
   if (!prInfo) {
-    return {
-      success: false,
-      error: "Pull request not found",
-    };
+    return { success: false, error: "Pull request not found" };
   }
 
   try {
     const updated = await updateWorkspaceGitHubPr(workspaceId, prInfo);
     revalidateWorkspacePaths();
     return { success: true, workspace: updated, githubPr: prInfo };
-  } catch (err) {
-    console.error("Failed to link GitHub PR to workspace:", err);
+  } catch {
     return { success: false, error: "Database error while linking PR" };
   }
 }
 
 /**
- * Server Action to re-fetch and update the CI status of a linked GitHub PR.
+ * Re-fetches and updates the status of a linked GitHub PR.
  */
 export async function refreshWorkspaceGitHubPr(workspaceId: string) {
-  if (!workspaceId || typeof workspaceId !== "string") {
-    return { success: false, error: "Invalid workspace ID" };
-  }
-
   const result = await getAuthedWorkspace(workspaceId);
   if ("error" in result) return { success: false, error: result.error };
 
   const currentPr = result.workspace.githubPr as GitHubPrInfo | null;
-  if (!currentPr || !currentPr.url) {
+  if (!currentPr?.url) {
     return { success: false, error: "No GitHub PR linked to this workspace" };
   }
 
@@ -213,11 +190,7 @@ export async function refreshWorkspaceGitHubPr(workspaceId: string) {
     return { success: false, error: "Invalid linked GitHub PR URL" };
   }
 
-  const updatedPr = await fetchGitHubPr(
-    parsed.owner,
-    parsed.repo,
-    parsed.prNumber
-  );
+  const updatedPr = await fetchGitHubPr(parsed.owner, parsed.repo, parsed.prNumber);
   if (!updatedPr) {
     return { success: false, error: "Failed to refresh PR data from GitHub" };
   }
@@ -226,20 +199,15 @@ export async function refreshWorkspaceGitHubPr(workspaceId: string) {
     const updated = await updateWorkspaceGitHubPr(workspaceId, updatedPr);
     revalidateWorkspacePaths();
     return { success: true, workspace: updated, githubPr: updatedPr };
-  } catch (err) {
-    console.error("Failed to refresh GitHub PR:", err);
+  } catch {
     return { success: false, error: "Database error while updating PR status" };
   }
 }
 
 /**
- * Server Action to unlink a GitHub PR from a workspace.
+ * Unlinks a GitHub PR from a workspace.
  */
 export async function unlinkWorkspaceGitHubPr(workspaceId: string) {
-  if (!workspaceId || typeof workspaceId !== "string") {
-    return { success: false, error: "Invalid workspace ID" };
-  }
-
   const result = await getAuthedWorkspace(workspaceId);
   if ("error" in result) return { success: false, error: result.error };
 
@@ -247,18 +215,17 @@ export async function unlinkWorkspaceGitHubPr(workspaceId: string) {
     const updated = await updateWorkspaceGitHubPr(workspaceId, null);
     revalidateWorkspacePaths();
     return { success: true, workspace: updated };
-  } catch (err) {
-    console.error("Failed to unlink GitHub PR:", err);
+  } catch {
     return { success: false, error: "Database error while unlinking PR" };
   }
 }
 
 // ============================================================================
-// Private Security & Authorization Helpers
+// Authorization & Access Helpers
 // ============================================================================
 
 /**
- * Common security guard: validates authentication, existence, and access permission.
+ * Validates authentication, workspace existence, and user access permission.
  */
 export async function getAuthedWorkspace(id: string) {
   const auth = await getAuthenticatedUser();
@@ -275,7 +242,7 @@ export async function getAuthedWorkspace(id: string) {
 }
 
 /**
- * Validates ownership or collaborative access for workspace members.
+ * Checks if caller is the workspace creator or belongs to the organization.
  */
 function canAccess(
   workspace: { creatorId: string; clerkOrgId: string | null },
