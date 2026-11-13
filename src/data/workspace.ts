@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { WorkspaceStatus, type Prisma } from "@prisma/client";
+import { WorkspaceStatus, Prisma } from "@prisma/client";
 import type { GitHubPrInfo } from "@/types/workspace";
 
-// Public creator fields to expose safely
+// Fields of the creator safe to return to the client
 export const creatorSelect = {
   id: true,
   name: true,
@@ -10,7 +10,6 @@ export const creatorSelect = {
   imageUrl: true,
 };
 
-// Common scope filter for personal vs organization workspaces
 export interface ScopeFilter {
   userId?: string;
   orgId?: string | null;
@@ -33,16 +32,13 @@ export interface UpdateWorkspaceInput {
   githubPr?: GitHubPrInfo | null;
 }
 
-// Build query conditions based on personal or organization context
+// Build WHERE clause based on organization or personal workspace context
 function scopeWhere(filter: ScopeFilter) {
   return filter.orgId
     ? { clerkOrgId: filter.orgId }
     : { creatorId: filter.userId, clerkOrgId: null };
 }
 
-/**
- * Find a workspace by ID with creator and doc.
- */
 export async function findWorkspaceById(id: string) {
   return prisma.workspace.findUnique({
     where: { id },
@@ -53,9 +49,6 @@ export async function findWorkspaceById(id: string) {
   });
 }
 
-/**
- * List workspaces belonging to personal or organization scope.
- */
 export async function findWorkspaces(filter: ScopeFilter) {
   return prisma.workspace.findMany({
     where: scopeWhere(filter),
@@ -66,12 +59,9 @@ export async function findWorkspaces(filter: ScopeFilter) {
   });
 }
 
-/**
- * Get the highest position in a status column using DB MAX aggregate.
- */
 export async function getHighestPosition(
   status: WorkspaceStatus,
-  filter: ScopeFilter
+  filter: ScopeFilter,
 ) {
   const res = await prisma.workspace.aggregate({
     where: { ...scopeWhere(filter), status },
@@ -81,9 +71,6 @@ export async function getHighestPosition(
   return res._max.position ?? 0;
 }
 
-/**
- * Create a workspace and initialize its 1-to-1 technical RFC doc.
- */
 export async function insertWorkspace(data: InsertWorkspaceInput) {
   return prisma.workspace.create({
     data: {
@@ -102,43 +89,25 @@ export async function insertWorkspace(data: InsertWorkspaceInput) {
   });
 }
 
-/**
- * Update workspace properties (name, description, status, position).
- */
 export async function updateWorkspaceData(
   id: string,
-  data: UpdateWorkspaceInput
-) {
-  const updatePayload: Prisma.WorkspaceUpdateInput = {
-    ...(data.name !== undefined ? { name: data.name } : {}),
-    ...(data.description !== undefined ? { description: data.description } : {}),
-    ...(data.status !== undefined ? { status: data.status } : {}),
-    ...(data.position !== undefined ? { position: data.position } : {}),
-    ...(data.githubPr !== undefined
-      ? { githubPr: data.githubPr as unknown as Prisma.InputJsonValue }
-      : {}),
-  };
-
-  return prisma.workspace.update({
-    where: { id },
-    data: updatePayload,
-    include: {
-      creator: { select: creatorSelect },
-    },
-  });
-}
-
-/**
- * Update linked GitHub PR information for a given workspace.
- */
-export async function updateWorkspaceGitHubPr(
-  id: string,
-  githubPr: GitHubPrInfo | null
+  data: UpdateWorkspaceInput,
 ) {
   return prisma.workspace.update({
     where: { id },
     data: {
-      githubPr: githubPr as unknown as Prisma.InputJsonValue,
+      name: data.name,
+      description: data.description,
+      status: data.status,
+      position: data.position,
+      ...(data.githubPr !== undefined
+        ? {
+            githubPr:
+              data.githubPr === null
+                ? Prisma.JsonNull
+                : (data.githubPr as unknown as Prisma.InputJsonValue),
+          }
+        : {}),
     },
     include: {
       creator: { select: creatorSelect },
@@ -146,9 +115,13 @@ export async function updateWorkspaceGitHubPr(
   });
 }
 
-/**
- * Delete a workspace and cascade delete its associated doc.
- */
+export async function updateWorkspaceGitHubPr(
+  id: string,
+  githubPr: GitHubPrInfo | null,
+) {
+  return updateWorkspaceData(id, { githubPr });
+}
+
 export async function deleteWorkspaceById(id: string) {
   return prisma.workspace.delete({
     where: { id },

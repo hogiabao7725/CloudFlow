@@ -2,7 +2,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { User } from "@prisma/client";
 
-// Finds a user record by their Clerk ID.
 export async function getUserByClerkId(clerkId: string): Promise<User | null> {
   return prisma.user.findUnique({
     where: { clerkId },
