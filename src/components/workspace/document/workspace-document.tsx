@@ -5,21 +5,10 @@ import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import {
-  Eye,
-  Code2,
-  Columns3,
-  Copy,
-  Check,
-  Bold,
-  Italic,
-  List,
-  Heading2,
-  Table as TableIcon,
-} from "lucide-react";
-import { toast } from "sonner";
 import { WorkspaceItem } from "@/types/workspace";
 import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
+import { DocumentToolbar, type ViewMode } from "./document-toolbar";
+import { DocumentCodeBlock } from "./document-code-block";
 
 interface WorkspaceDocumentProps {
   workspace: WorkspaceItem;
@@ -38,42 +27,6 @@ function extractText(node: ReactNode): string {
     return extractText(node.props.children);
   }
   return "";
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      toast.success("Code copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy code");
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-2 py-0.5 rounded bg-background/50 hover:bg-secondary border border-border/60"
-      title="Copy to clipboard"
-    >
-      {copied ? (
-        <>
-          <Check className="size-3 text-emerald-400" />
-          <span className="text-emerald-400">Copied</span>
-        </>
-      ) : (
-        <>
-          <Copy className="size-3" />
-          <span>Copy</span>
-        </>
-      )}
-    </button>
-  );
 }
 
 function toSlug(children: ReactNode): string {
@@ -96,9 +49,7 @@ export function WorkspaceDocument({
   const [localContent, setLocalContent] = useState(MOCK_RFC_MARKDOWN);
   const isControlled = markdownContent !== undefined;
   const content = isControlled ? markdownContent : localContent;
-  const [viewMode, setViewMode] = useState<"preview" | "raw" | "split">(
-    "preview",
-  );
+  const [viewMode, setViewMode] = useState<ViewMode>("preview");
 
   const handleContentChange = (val: string) => {
     if (!isControlled) {
@@ -107,129 +58,21 @@ export function WorkspaceDocument({
     onMarkdownChange?.(val);
   };
 
-  const insertSnippet = (prefix: string, suffix = "") => {
+  const handleInsertSnippet = (prefix: string, suffix = "") => {
     handleContentChange(content + `\n${prefix}Content${suffix}\n`);
   };
 
   return (
     <main className="flex-1 h-full overflow-hidden flex flex-col bg-background">
-      {/* Document Sub-Header / Action Toolbar */}
-      <div className="h-11 px-4 border-b border-border/80 bg-card/40 flex items-center justify-between shrink-0 select-none">
-        {/* View Mode Toggle Tabs (Preview / Raw / Split) */}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setViewMode("preview")}
-            className={`px-2.5 py-1 rounded text-[13px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
-              viewMode === "preview"
-                ? "bg-secondary text-foreground border border-border"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Eye className="size-3.5 text-sky-400" />
-            <span>Preview</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("raw")}
-            className={`px-2.5 py-1 rounded text-[13px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
-              viewMode === "raw"
-                ? "bg-secondary text-foreground border border-border"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Code2 className="size-3.5 text-amber-400" />
-            <span>Raw Markdown</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("split")}
-            className={`hidden lg:flex px-2.5 py-1 rounded text-[13px] font-medium items-center gap-1.5 cursor-pointer transition-colors ${
-              viewMode === "split"
-                ? "bg-secondary text-foreground border border-border"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Columns3 className="size-3.5 text-emerald-400" />
-            <span>Split View</span>
-          </button>
-        </div>
-
-        {/* Clean Save Action (KISS - No colorful icons) */}
-        {onSave && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground hidden sm:inline">
-              {isSaving ? "Saving..." : isSaved ? "Saved" : "Unsaved changes"}
-            </span>
-            <button
-              type="button"
-              onClick={onSave}
-              disabled={isSaving || isSaved}
-              className="h-7 px-3 rounded text-xs font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Formatting Quick-Toolbar (When in Raw or Split mode) */}
-      {(viewMode === "raw" || viewMode === "split") && (
-        <div className="h-8 px-4 border-b border-border/60 bg-card/20 flex items-center gap-1 text-xs shrink-0 select-none overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => insertSnippet("## ")}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Heading 2"
-          >
-            <Heading2 className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => insertSnippet("**", "**")}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Bold"
-          >
-            <Bold className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => insertSnippet("*", "*")}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Italic"
-          >
-            <Italic className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => insertSnippet("- ")}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Bullet List"
-          >
-            <List className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => insertSnippet("```typescript\n", "\n```")}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Code Block"
-          >
-            <Code2 className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              insertSnippet(
-                "| Header 1 | Header 2 |\n| :--- | :--- |\n| Row 1 | Value 1 |",
-              )
-            }
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded cursor-pointer"
-            title="Table"
-          >
-            <TableIcon className="size-3.5" />
-          </button>
-        </div>
-      )}
+      {/* Sub-Header & Toolbar */}
+      <DocumentToolbar
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onSave={onSave}
+        isSaving={isSaving}
+        isSaved={isSaved}
+        onInsertSnippet={handleInsertSnippet}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden relative flex">
@@ -377,17 +220,13 @@ export function WorkspaceDocument({
                         : lang;
 
                     return (
-                      <div className="relative my-3.5 rounded-lg border border-border/80 bg-card/60 overflow-hidden font-mono text-xs sm:text-[13.5px] shadow-xs">
-                        <div className="flex items-center justify-between px-3.5 py-1.5 bg-secondary/40 border-b border-border/60 text-[11px] select-none">
-                          <span className="uppercase text-zinc-400 font-mono font-medium text-[10px] sm:text-[11px] tracking-wider">
-                            {displayLabel}
-                          </span>
-                          <CopyButton value={rawCode} />
-                        </div>
-                        <pre className="p-3.5 overflow-x-auto leading-relaxed text-xs sm:text-[13.5px] text-foreground/95 bg-card/30">
-                          <code className={className}>{children}</code>
-                        </pre>
-                      </div>
+                      <DocumentCodeBlock
+                        displayLabel={displayLabel}
+                        rawCode={rawCode}
+                        className={className}
+                      >
+                        {children}
+                      </DocumentCodeBlock>
                     );
                   },
                 }}

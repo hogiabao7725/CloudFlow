@@ -1,14 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { WorkspaceHeader } from "@/components/workspace/workspace-header";
+import { WorkspaceHeader } from "@/components/workspace/header/workspace-header";
 import {
   WorkspaceOutline,
   extractHeadingsFromMarkdown,
-} from "@/components/workspace/workspace-outline";
-import { WorkspaceDocument } from "@/components/workspace/workspace-document";
-import { WorkspaceAISidebar } from "@/components/workspace/workspace-ai-sidebar";
-import { WorkspacePresence } from "@/components/workspace/workspace-presence";
+} from "@/components/workspace/outline/workspace-outline";
+import { WorkspaceDocument } from "@/components/workspace/document/workspace-document";
+import { DocumentToolbar } from "@/components/workspace/document/document-toolbar";
+import { DocumentCodeBlock } from "@/components/workspace/document/document-code-block";
+import { WorkspaceAISidebar } from "@/components/workspace/ai/workspace-ai-sidebar";
+import { WorkspacePresence } from "@/components/workspace/header/workspace-presence";
 import { WorkspaceRoom } from "@/components/workspace/workspace-room";
-import { WorkspaceGitHubPr } from "@/components/workspace/workspace-github-pr";
+import { WorkspaceGitHubPr } from "@/components/workspace/outline/workspace-github-pr";
 import { MOCK_RFC_MARKDOWN, MOCK_GITHUB_PR } from "@/mock/workspace-spec-mock";
 
 describe("Workspace Layout Components Contract", () => {
@@ -22,6 +24,11 @@ describe("Workspace Layout Components Contract", () => {
 
   it("should export WorkspaceDocument as a functional component", () => {
     expect(typeof WorkspaceDocument).toBe("function");
+  });
+
+  it("should export DocumentToolbar and DocumentCodeBlock as functional components", () => {
+    expect(typeof DocumentToolbar).toBe("function");
+    expect(typeof DocumentCodeBlock).toBe("function");
   });
 
   it("should export WorkspaceAISidebar as a functional component", () => {

@@ -7,15 +7,16 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { WorkspaceHeader } from "./workspace-header";
+import { WorkspaceHeader } from "./header/workspace-header";
 import {
   WorkspaceOutline,
   extractHeadingsFromMarkdown,
-} from "./workspace-outline";
-import { WorkspaceDocument } from "./workspace-document";
-import { WorkspaceAISidebar } from "./workspace-ai-sidebar";
+} from "./outline/workspace-outline";
+import { WorkspaceDocument } from "./document/workspace-document";
+import { WorkspaceAISidebar } from "./ai/workspace-ai-sidebar";
 import { MOCK_RFC_MARKDOWN } from "@/mock/workspace-spec-mock";
 import { useWorkspaceDoc } from "@/hooks/use-workspace-doc";
+import { SHOW_AI_COPILOT } from "@/utils/ai";
 
 interface WorkspaceRoomProps {
   initialWorkspace: WorkspaceItem;
@@ -88,16 +89,16 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
       {/* Main Resizable 3-Column Studio Layout (20% Outline - 60% Document - 20% AI) */}
       <div className="flex-1 w-full overflow-hidden flex relative">
         <ResizablePanelGroup
-          key={`${outlineOpen}-${aiOpen}`}
+          key={SHOW_AI_COPILOT ? `${outlineOpen}-${aiOpen}` : `${outlineOpen}`}
           direction="horizontal"
           className="h-full w-full"
         >
-          {/* Left: Dynamic Markdown Outline Panel (~20%) */}
+          {/* Left: Dynamic Markdown Outline Panel (~22%) */}
           {outlineOpen && (
             <>
               <ResizablePanel
                 id="panel-outline"
-                defaultSize="20%"
+                defaultSize="22%"
                 minSize="15%"
                 maxSize="35%"
                 className="h-full"
@@ -118,14 +119,16 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
             </>
           )}
 
-          {/* Center: Main Markdown Document Workbench (~60%) */}
+          {/* Center: Main Markdown Document Workbench (~78% or 100%) */}
           <ResizablePanel
             id="panel-document"
             defaultSize={
-              outlineOpen && aiOpen
-                ? "60%"
-                : outlineOpen || aiOpen
-                ? "80%"
+              SHOW_AI_COPILOT && aiOpen
+                ? outlineOpen
+                  ? "60%"
+                  : "75%"
+                : outlineOpen
+                ? "78%"
                 : "100%"
             }
             minSize="30%"
@@ -141,8 +144,8 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
             />
           </ResizablePanel>
 
-          {/* Right: Resizable Copilot Assistant Sidebar (~20%) */}
-          {aiOpen && (
+          {/* Right: Resizable Copilot Assistant Sidebar (Optional / Feature Flagged) */}
+          {SHOW_AI_COPILOT && aiOpen && (
             <>
               <ResizableHandle withHandle />
               <ResizablePanel
@@ -156,6 +159,7 @@ export function WorkspaceRoom({ initialWorkspace }: WorkspaceRoomProps) {
                   open={aiOpen}
                   onClose={() => setAiOpen(false)}
                   workspaceName={workspace.name}
+                  documentMarkdown={markdown}
                   onInsertSnippet={handleInsertSnippet}
                 />
               </ResizablePanel>

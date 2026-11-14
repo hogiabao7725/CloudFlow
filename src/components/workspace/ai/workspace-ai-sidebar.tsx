@@ -8,6 +8,7 @@ interface WorkspaceAISidebarProps {
   open: boolean;
   onClose: () => void;
   workspaceName?: string;
+  documentMarkdown?: string;
   onInsertSnippet?: (snippet: string) => void;
 }
 

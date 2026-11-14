@@ -15,13 +15,14 @@ import { WorkspaceItem } from "@/types/workspace";
 import { WorkspaceTitle } from "./workspace-title";
 import { WorkspaceStatusSelect } from "./workspace-status-select";
 import { WorkspacePresence } from "./workspace-presence";
+import { SHOW_AI_COPILOT } from "@/utils/ai";
 
 interface WorkspaceHeaderProps {
   workspace: WorkspaceItem;
   outlineOpen: boolean;
   onToggleOutline: () => void;
-  aiOpen: boolean;
-  onToggleAi: () => void;
+  aiOpen?: boolean;
+  onToggleAi?: () => void;
   onWorkspaceUpdated?: (updated: Partial<WorkspaceItem>) => void;
 }
 
@@ -113,21 +114,23 @@ export function WorkspaceHeader({
           <span className="hidden sm:inline">Share</span>
         </Button>
 
-        <Button
-          type="button"
-          variant={aiOpen ? "secondary" : "ghost"}
-          size="sm"
-          onClick={onToggleAi}
-          className={`h-8 px-2.5 text-xs gap-1.5 ${
-            aiOpen
-              ? "bg-secondary text-foreground border border-border font-medium"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          title="Toggle Copilot Assistant"
-        >
-          <Sparkles className="size-3.5 text-zinc-400" />
-          <span className="hidden sm:inline">Copilot</span>
-        </Button>
+        {SHOW_AI_COPILOT && (
+          <Button
+            type="button"
+            variant={aiOpen ? "secondary" : "ghost"}
+            size="sm"
+            onClick={onToggleAi}
+            className={`h-8 px-2.5 text-xs gap-1.5 ${
+              aiOpen
+                ? "bg-secondary text-foreground border border-border font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Toggle Copilot Assistant"
+          >
+            <Sparkles className="size-3.5 text-zinc-400" />
+            <span className="hidden sm:inline">Copilot</span>
+          </Button>
+        )}
       </div>
     </header>
   );

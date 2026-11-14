@@ -1,0 +1,11 @@
+export { WorkspaceRoom } from "./workspace-room";
+export { WorkspaceHeader } from "./header/workspace-header";
+export { WorkspacePresence } from "./header/workspace-presence";
+export { WorkspaceTitle } from "./header/workspace-title";
+export { WorkspaceStatusSelect } from "./header/workspace-status-select";
+export { WorkspaceOutline, extractHeadingsFromMarkdown } from "./outline/workspace-outline";
+export { WorkspaceGitHubPr } from "./outline/workspace-github-pr";
+export { WorkspaceDocument } from "./document/workspace-document";
+export { DocumentToolbar } from "./document/document-toolbar";
+export { DocumentCodeBlock, CopyButton } from "./document/document-code-block";
+export { WorkspaceAISidebar } from "./ai/workspace-ai-sidebar";
