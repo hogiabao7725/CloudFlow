@@ -23,13 +23,6 @@ export function useWorkspaceDoc({
     setSavedMarkdown(initialMarkdown);
   }
 
-  // Document is saved if current text equals last saved text
-  const isSaved = markdown === savedMarkdown;
-
-  const handleMarkdownChange = useCallback((newContent: string) => {
-    setMarkdown(newContent);
-  }, []);
-
   const handleSave = useCallback(async () => {
     if (isSaving || markdown === savedMarkdown) return;
     setIsSaving(true);
@@ -65,8 +58,8 @@ export function useWorkspaceDoc({
   return {
     markdown,
     isSaving,
-    isSaved,
-    handleMarkdownChange,
+    isSaved: markdown === savedMarkdown,
+    handleMarkdownChange: setMarkdown,
     handleSave,
   };
 }

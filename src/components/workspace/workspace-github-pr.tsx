@@ -30,6 +30,18 @@ interface WorkspaceGitHubPrProps {
   onPrUpdated?: (pr: GitHubPrInfo | null) => void;
 }
 
+const PR_LIFECYCLE = {
+  merged: { label: "Merged", color: "text-purple-400", Icon: GitMerge },
+  closed: { label: "Closed", color: "text-rose-400", Icon: GitPullRequestClosed },
+  open: { label: "Open", color: "text-emerald-400", Icon: GitPullRequest },
+} as const;
+
+const CI_STATUS = {
+  passed: { label: "Passed", color: "text-emerald-400", Icon: CheckCircle2, spin: false },
+  failed: { label: "Failed", color: "text-rose-400", Icon: XCircle, spin: false },
+  running: { label: "Running", color: "text-amber-400", Icon: Loader2, spin: true },
+} as const;
+
 export function WorkspaceGitHubPr({
   workspaceId,
   githubPr,
@@ -104,51 +116,11 @@ export function WorkspaceGitHubPr({
     }
   };
 
-  // Resolve PR lifecycle state (Merged, Closed, Open)
-  const getPrLifecycle = () => {
-    switch (githubPr?.state) {
-      case "merged":
-        return { label: "Merged", color: "text-purple-400", Icon: GitMerge };
-      case "closed":
-        return { label: "Closed", color: "text-rose-400", Icon: GitPullRequestClosed };
-      case "open":
-        return { label: "Open", color: "text-emerald-400", Icon: GitPullRequest };
-      default:
-        return null;
-    }
-  };
-
-  const lifecycle = getPrLifecycle();
-
-  // Render CI check status indicator (Passed, Failed, Running)
-  const renderCiIndicator = () => {
-    if (!githubPr?.ciStatus || githubPr.ciStatus === "none") return null;
-    switch (githubPr.ciStatus) {
-      case "passed":
-        return (
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
-            <CheckCircle2 className="size-4 text-emerald-400" />
-            <span>Passed</span>
-          </span>
-        );
-      case "failed":
-        return (
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-400">
-            <XCircle className="size-4 text-rose-400" />
-            <span>Failed</span>
-          </span>
-        );
-      case "running":
-        return (
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-amber-400">
-            <Loader2 className="size-4 animate-spin text-amber-400" />
-            <span>Running</span>
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
+  const lifecycle = githubPr?.state ? PR_LIFECYCLE[githubPr.state] : null;
+  const ci =
+    githubPr?.ciStatus && githubPr.ciStatus !== "none"
+      ? CI_STATUS[githubPr.ciStatus]
+      : null;
 
   return (
     <div className="border-t border-border/70 bg-card/20 select-none">
@@ -246,7 +218,12 @@ export function WorkspaceGitHubPr({
                 </span>
               </div>
 
-              <div className="shrink-0">{renderCiIndicator()}</div>
+              {ci && (
+                <div className={`flex items-center gap-1.5 text-sm font-semibold ${ci.color}`}>
+                  <ci.Icon className={`size-4 ${ci.spin ? "animate-spin" : ""}`} />
+                  <span>{ci.label}</span>
+                </div>
+              )}
             </div>
 
             {/* Branch name and PR lifecycle state */}

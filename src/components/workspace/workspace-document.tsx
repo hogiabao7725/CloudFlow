@@ -76,6 +76,15 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
+function toSlug(children: ReactNode): string {
+  const text = extractText(children);
+  const slug = text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+  return `sec-${slug}`;
+}
+
 export function WorkspaceDocument({
   workspace,
   markdownContent,
@@ -265,74 +274,42 @@ export function WorkspaceDocument({
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeHighlight]}
                 components={{
-                  h1: ({ children, ...props }) => {
-                    const text = String(children);
-                    const slug = text
-                      .toLowerCase()
-                      .replace(/[^\w\s-]/g, "")
-                      .replace(/\s+/g, "-");
-                    const id = `sec-${slug}`;
-                    return (
-                      <h1
-                        id={id}
-                        className="text-xl sm:text-2xl font-bold tracking-tight text-foreground border-b border-border/60 pb-2 mt-7 mb-3.5 scroll-mt-6"
-                        {...props}
-                      >
-                        {children}
-                      </h1>
-                    );
-                  },
-                  h2: ({ children, ...props }) => {
-                    const text = String(children);
-                    const slug = text
-                      .toLowerCase()
-                      .replace(/[^\w\s-]/g, "")
-                      .replace(/\s+/g, "-");
-                    const id = `sec-${slug}`;
-                    return (
-                      <h2
-                        id={id}
-                        className="text-lg sm:text-xl font-bold tracking-tight text-foreground border-b border-border/40 pb-1 mt-6 mb-2.5 scroll-mt-6"
-                        {...props}
-                      >
-                        {children}
-                      </h2>
-                    );
-                  },
-                  h3: ({ children, ...props }) => {
-                    const text = String(children);
-                    const slug = text
-                      .toLowerCase()
-                      .replace(/[^\w\s-]/g, "")
-                      .replace(/\s+/g, "-");
-                    const id = `sec-${slug}`;
-                    return (
-                      <h3
-                        id={id}
-                        className="text-base sm:text-lg font-semibold tracking-tight text-foreground mt-5 mb-2 scroll-mt-6"
-                        {...props}
-                      >
-                        {children}
-                      </h3>
-                    );
-                  },
-                  h4: ({ children, ...props }) => {
-                    const text = String(children);
-                    const slug = text
-                      .toLowerCase()
-                      .replace(/[^\w\s-]/g, "")
-                      .replace(/\s+/g, "-");
-                    const id = `sec-${slug}`;
-                    return (
-                      <h4
-                        id={id}
-                        className="text-sm sm:text-base font-semibold text-foreground/90 mt-4 mb-1.5 scroll-mt-6"
-                        {...props}
-                      >
-                        {children}
-                      </h4>
-                    );
-                  },
+                  h1: ({ children, ...props }) => (
+                    <h1
+                      id={toSlug(children)}
+                      className="text-xl sm:text-2xl font-bold tracking-tight text-foreground border-b border-border/60 pb-2 mt-7 mb-3.5 scroll-mt-6"
+                      {...props}
+                    >
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children, ...props }) => (
+                    <h2
+                      id={toSlug(children)}
+                      className="text-lg sm:text-xl font-bold tracking-tight text-foreground border-b border-border/40 pb-1 mt-6 mb-2.5 scroll-mt-6"
+                      {...props}
+                    >
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children, ...props }) => (
+                    <h3
+                      id={toSlug(children)}
+                      className="text-base sm:text-lg font-semibold tracking-tight text-foreground mt-5 mb-2 scroll-mt-6"
+                      {...props}
+                    >
+                      {children}
+                    </h3>
+                  ),
+                  h4: ({ children, ...props }) => (
+                    <h4
+                      id={toSlug(children)}
+                      className="text-sm sm:text-base font-semibold text-foreground/90 mt-4 mb-1.5 scroll-mt-6"
+                      {...props}
+                    >
+                      {children}
+                    </h4>
+                  ),
                   p: ({ children }) => (
                     <p className="text-[15px] sm:text-[15.5px] text-foreground/90 leading-relaxed my-2.5">
                       {children}

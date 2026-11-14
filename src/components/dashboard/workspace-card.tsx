@@ -16,26 +16,18 @@ import {
 import { WorkspaceItem } from "@/types/workspace";
 
 function formatCompactRelativeTime(dateInput: Date | string): string {
-  try {
-    const date = new Date(dateInput);
-    if (isNaN(date.getTime())) return "recently";
-    const now = new Date();
-    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diffSec < 60) return "just now";
-    const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin}m ago`;
-    const diffHours = Math.floor(diffMin / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return "yesterday";
-    if (diffDays < 30) return `${diffDays}d ago`;
-    const diffMonths = Math.floor(diffDays / 30);
-    if (diffMonths < 12) return `${diffMonths}mo ago`;
-    const diffYears = Math.floor(diffDays / 365);
-    return `${diffYears}y ago`;
-  } catch {
-    return "recently";
-  }
+  const diffSec = Math.floor((Date.now() - new Date(dateInput).getTime()) / 1000);
+  if (isNaN(diffSec) || diffSec < 0) return "recently";
+  if (diffSec < 60) return "just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "yesterday";
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMo = Math.floor(diffDays / 30);
+  return diffMo < 12 ? `${diffMo}mo ago` : `${Math.floor(diffDays / 365)}y ago`;
 }
 
 export interface WorkspaceCardProps {

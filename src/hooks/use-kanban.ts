@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { DropResult } from "@hello-pangea/dnd";
+import { useState, useEffect, useMemo } from "react";
+import type { DropResult } from "@hello-pangea/dnd";
 import { WorkspaceStatus } from "@prisma/client";
 import { toast } from "sonner";
-import { WorkspaceItem } from "@/types/workspace";
+import type { WorkspaceItem } from "@/types/workspace";
 import {
   createWorkspace as createWorkspaceAction,
   updateWorkspaceStatus,
@@ -16,8 +16,7 @@ import { subscribeToKanban } from "@/lib/realtime";
  * Main hook managing Kanban board state, filters, and drag-and-drop actions.
  */
 export function useKanban(initialWorkspaces: WorkspaceItem[]) {
-  const [workspaces, setWorkspaces] =
-    useState<WorkspaceItem[]>(initialWorkspaces);
+  const [workspaces, setWorkspaces] = useState(initialWorkspaces);
   const [prevInitial, setPrevInitial] = useState(initialWorkspaces);
 
   // Sync state if server re-renders with fresh initial data
@@ -28,22 +27,13 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
 
   // Real-time synchronization across clients and tabs
   useEffect(() => {
-    return subscribeToKanban((mutation) => {
-      if (mutation.type === "INSERT") {
-        setWorkspaces((prev) =>
-          prev.some((w) => w.id === mutation.record.id)
-            ? prev
-            : [...prev, mutation.record],
-        );
-      } else if (mutation.type === "UPDATE") {
-        setWorkspaces((prev) =>
-          prev.map((w) =>
-            w.id === mutation.record.id ? { ...w, ...mutation.record } : w,
-          ),
-        );
-      } else if (mutation.type === "DELETE") {
-        setWorkspaces((prev) => prev.filter((w) => w.id !== mutation.id));
-      }
+    return subscribeToKanban((m) => {
+      setWorkspaces((prev) => {
+        if (m.type === "INSERT") return prev.some((w) => w.id === m.record.id) ? prev : [...prev, m.record];
+        if (m.type === "UPDATE") return prev.map((w) => (w.id === m.record.id ? { ...w, ...m.record } : w));
+        if (m.type === "DELETE") return prev.filter((w) => w.id !== m.id);
+        return prev;
+      });
     });
   }, []);
 
@@ -51,28 +41,24 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Pure data computations
-  const filteredWorkspaces = filterWorkspaces(workspaces, search, statusFilter);
+  const filteredWorkspaces = useMemo(
+    () => filterWorkspaces(workspaces, search, statusFilter),
+    [workspaces, search, statusFilter],
+  );
 
   // Actions
-  const createWorkspace = async (
-    input: CreateWorkspaceInput,
-  ): Promise<boolean> => {
+  const createWorkspace = async (input: CreateWorkspaceInput) => {
     const res = await createWorkspaceAction(input);
     if (!res.success || !res.workspace) {
       toast.error(res.error || "Failed to create workspace");
       return false;
     }
-
     setWorkspaces((prev) => [...prev, res.workspace]);
     toast.success("Workspace created");
     return true;
   };
 
-  const renameWorkspace = async (
-    id: string,
-    newName: string,
-  ): Promise<boolean> => {
+  const renameWorkspace = async (id: string, newName: string) => {
     const trimmed = newName.trim();
     if (!trimmed) return false;
 
@@ -81,21 +67,17 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
       toast.error(res.error || "Failed to rename workspace");
       return false;
     }
-
-    setWorkspaces((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, name: trimmed } : w)),
-    );
+    setWorkspaces((prev) => prev.map((w) => (w.id === id ? { ...w, name: trimmed } : w)));
     toast.success("Workspace renamed");
     return true;
   };
 
-  const deleteWorkspaceAction = async (id: string): Promise<boolean> => {
+  const deleteWorkspaceAction = async (id: string) => {
     const res = await deleteWorkspace(id);
     if (!res.success) {
       toast.error(res.error || "Failed to delete workspace");
       return false;
     }
-
     setWorkspaces((prev) => prev.filter((w) => w.id !== id));
     toast.success("Workspace deleted");
     return true;
@@ -104,40 +86,23 @@ export function useKanban(initialWorkspaces: WorkspaceItem[]) {
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const destStatus = destination.droppableId as WorkspaceStatus;
-    const movedItem = workspaces.find((w) => w.id === draggableId);
-    if (!movedItem) return;
+    const moved = workspaces.find((w) => w.id === draggableId);
+    if (!moved) return;
 
-    const newPosition = calculateNextPosition(
-      workspaces,
-      destStatus,
-      draggableId,
-      destination.index,
-    );
-    const prevWorkspaces = [...workspaces];
-    const updatedItem: WorkspaceItem = {
-      ...movedItem,
-      status: destStatus,
-      position: newPosition,
-    };
+    const colItems = workspaces
+      .filter((w) => w.status === destStatus && w.id !== draggableId)
+      .sort((a, b) => a.position - b.position);
 
-    setWorkspaces([
-      ...workspaces.filter((w) => w.id !== draggableId),
-      updatedItem,
-    ]);
+    const newPosition = calculateNextPosition(colItems, destination.index);
+    const prevWorkspaces = workspaces;
+    const updated = { ...moved, status: destStatus, position: newPosition };
 
-    const res = await updateWorkspaceStatus(
-      draggableId,
-      destStatus,
-      newPosition,
-    );
+    setWorkspaces((prev) => prev.map((w) => (w.id === draggableId ? updated : w)));
+
+    const res = await updateWorkspaceStatus(draggableId, destStatus, newPosition);
     if (!res.success) {
       toast.error(res.error || "Failed to persist card movement");
       setWorkspaces(prevWorkspaces);
@@ -178,23 +143,12 @@ function filterWorkspaces(
   });
 }
 
-function calculateNextPosition(
-  workspaces: WorkspaceItem[],
-  destStatus: WorkspaceStatus,
-  draggableId: string,
-  destinationIndex: number,
-): number {
-  const colItems = workspaces
-    .filter((w) => w.status === destStatus && w.id !== draggableId)
-    .sort((a, b) => a.position - b.position);
+function calculateNextPosition(items: WorkspaceItem[], index: number): number {
+  if (items.length === 0) return 1000;
+  if (index === 0) return items[0].position / 2;
+  if (index >= items.length) return items[items.length - 1].position + 1000;
 
-  if (colItems.length === 0) return 1000;
-  if (destinationIndex === 0) return colItems[0].position / 2;
-  if (destinationIndex >= colItems.length)
-    return colItems[colItems.length - 1].position + 1000;
-  return (
-    (colItems[destinationIndex - 1].position +
-      colItems[destinationIndex].position) /
-    2
-  );
+  const prevPos = items[index - 1].position;
+  const nextPos = items[index].position;
+  return (prevPos + nextPos) / 2;
 }
