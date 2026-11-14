@@ -26,47 +26,26 @@ interface RawGitHubPr {
  * Builds standard GitHub REST API request headers.
  */
 export function getGitHubHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
+  return {
     Accept: "application/vnd.github+json",
     "User-Agent": "CloudFlow-DevOps-Platform",
+    ...(process.env.GITHUB_TOKEN && {
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    }),
   };
-  if (process.env.GITHUB_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-  }
-  return headers;
 }
 
 /**
  * Parses GitHub PR input: full URL or owner/repo#number format.
- * Returns null if format is invalid or repository is missing.
  */
 export function parseGitHubPrInput(input: string): ParsedPrInput | null {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
+  const str = input.trim();
+  const m =
+    str.match(/github\.com\/([^/\s]+)\/([^/\s]+)\/pull\/(\d+)/i) ||
+    str.match(/^([^/\s]+)\/([^#\s]+)#(\d+)$/);
 
-  // 1. Full URL: https://github.com/:owner/:repo/pull/:number
-  const urlMatch = trimmed.match(
-    /(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s]+)\/pull\/(\d+)/i,
-  );
-  if (urlMatch) {
-    return {
-      owner: urlMatch[1],
-      repo: urlMatch[2],
-      prNumber: parseInt(urlMatch[3], 10),
-    };
-  }
-
-  // 2. Short format: owner/repo#number
-  const shortMatch = trimmed.match(/^([^/\s]+)\/([^#\s]+)#(\d+)$/);
-  if (shortMatch) {
-    return {
-      owner: shortMatch[1],
-      repo: shortMatch[2],
-      prNumber: parseInt(shortMatch[3], 10),
-    };
-  }
-
-  return null;
+  if (!m) return null;
+  return { owner: m[1], repo: m[2], prNumber: parseInt(m[3], 10) };
 }
 
 /**
@@ -75,13 +54,8 @@ export function parseGitHubPrInput(input: string): ParsedPrInput | null {
 export function resolvePrState(
   prData: Pick<RawGitHubPr, "state" | "merged" | "merged_at">,
 ): GitHubPrInfo["state"] {
-  if (prData.merged || prData.merged_at) {
-    return "merged";
-  }
-  if (prData.state === "closed") {
-    return "closed";
-  }
-  return "open";
+  if (prData.merged || prData.merged_at) return "merged";
+  return prData.state === "closed" ? "closed" : "open";
 }
 
 /**
@@ -90,21 +64,17 @@ export function resolvePrState(
 export function evaluateCiStatus(
   runs: RawCheckRun[],
 ): GitHubPrInfo["ciStatus"] {
-  if (!runs || runs.length === 0) return "none";
-
-  const hasFailed = runs.some(
-    (r) =>
-      r.conclusion === "failure" ||
-      r.conclusion === "timed_out" ||
-      r.conclusion === "cancelled",
-  );
-  if (hasFailed) return "failed";
-
-  const hasRunning = runs.some(
-    (r) => r.status === "in_progress" || r.status === "queued",
-  );
-  if (hasRunning) return "running";
-
+  if (!runs?.length) return "none";
+  if (
+    runs.some((r) =>
+      ["failure", "timed_out", "cancelled"].includes(r.conclusion ?? ""),
+    )
+  ) {
+    return "failed";
+  }
+  if (runs.some((r) => ["in_progress", "queued"].includes(r.status ?? ""))) {
+    return "running";
+  }
   return "passed";
 }
 
@@ -126,8 +96,7 @@ export async function fetchCiCheckStatus(
     if (!res.ok) return "none";
 
     const data = await res.json();
-    const runs = (data?.check_runs as RawCheckRun[]) || [];
-    return evaluateCiStatus(runs);
+    return evaluateCiStatus(data?.check_runs || []);
   } catch {
     return "none";
   }
@@ -148,24 +117,19 @@ export async function fetchGitHubPr(
     );
     if (!res.ok) return null;
 
-    const prData: RawGitHubPr = await res.json();
-    const ciStatus = await fetchCiCheckStatus(owner, repo, prData.head?.sha);
+    const pr: RawGitHubPr = await res.json();
+    const ciStatus = await fetchCiCheckStatus(owner, repo, pr.head?.sha);
 
     return {
-      url: prData.html_url,
-      number: prData.number,
-      title: prData.title,
-      state: resolvePrState(prData),
-      branch: prData.head?.ref || "unknown",
+      url: pr.html_url,
+      number: pr.number,
+      title: pr.title,
+      state: resolvePrState(pr),
+      branch: pr.head?.ref || "unknown",
       ciStatus,
-      ...(prData.user
-        ? {
-            author: {
-              login: prData.user.login,
-              avatarUrl: prData.user.avatar_url,
-            },
-          }
-        : {}),
+      ...(pr.user && {
+        author: { login: pr.user.login, avatarUrl: pr.user.avatar_url },
+      }),
     };
   } catch (err) {
     console.error("Error fetching GitHub PR:", err);
