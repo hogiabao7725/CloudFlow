@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   subscribeToKanban,
   subscribeToWorkspacePresence,
+  subscribeToDoc,
   KanbanMutation,
   PresenceUser,
 } from "@/lib/realtime";
@@ -24,7 +25,7 @@ const mockChannel = {
     (
       type: string,
       filter: { event: string },
-      handler: any,
+      handler: (payload?: unknown) => void,
     ) => {
       if (type === "postgres_changes") {
         registeredPostgresHandler = handler;
@@ -182,6 +183,40 @@ describe("Realtime Central Module (src/lib/realtime.ts)", () => {
         { id: "user-2", name: "Alex" },
         { id: "user-3", name: "Sarah" },
       ]);
+    });
+  });
+
+  describe("subscribeToDoc", () => {
+    it("should subscribe to doc channel with workspace filter and forward markdown updates", () => {
+      let received = "";
+      const unsubscribe = subscribeToDoc("ws-456", (md) => {
+        received = md;
+      });
+
+      expect(supabase.channel).toHaveBeenCalledWith("doc:ws-456");
+      expect(mockChannel.subscribe).toHaveBeenCalled();
+
+      registeredPostgresHandler!({
+        eventType: "UPDATE",
+        new: { id: "doc-1", workspaceId: "ws-456", markdown: "# Live RFC Specification" },
+      });
+
+      expect(received).toBe("# Live RFC Specification");
+
+      unsubscribe();
+      expect(supabase.removeChannel).toHaveBeenCalledWith(mockChannel);
+    });
+
+    it("should ignore payload without valid markdown string", () => {
+      const onUpdate = vi.fn();
+      subscribeToDoc("ws-456", onUpdate);
+
+      registeredPostgresHandler!({
+        eventType: "UPDATE",
+        new: { id: "doc-1", workspaceId: "ws-456", markdown: null },
+      });
+
+      expect(onUpdate).not.toHaveBeenCalled();
     });
   });
 });

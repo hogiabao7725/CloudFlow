@@ -76,3 +76,34 @@ export function subscribeToWorkspacePresence(
     supabase.removeChannel(channel);
   };
 }
+
+/**
+ * Subscribes to real-time changes on the Doc table for a specific workspace.
+ */
+export function subscribeToDoc(
+  workspaceId: string,
+  onUpdate: (markdown: string) => void,
+): () => void {
+  const channel = supabase
+    .channel(`doc:${workspaceId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "Doc",
+        filter: `workspaceId=eq.${workspaceId}`,
+      },
+      (payload) => {
+        const newRecord = payload.new as { markdown?: string | null } | undefined;
+        if (newRecord && typeof newRecord.markdown === "string") {
+          onUpdate(newRecord.markdown);
+        }
+      },
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}

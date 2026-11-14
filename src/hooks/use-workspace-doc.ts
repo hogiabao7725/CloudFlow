@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { saveDocMarkdown } from "@/actions/doc";
+import { subscribeToDoc } from "@/lib/realtime";
 
 interface UseWorkspaceDocOptions {
   workspaceId: string;
@@ -22,6 +23,18 @@ export function useWorkspaceDoc({
     setMarkdown(initialMarkdown);
     setSavedMarkdown(initialMarkdown);
   }
+
+  // Subscribe to real-time Doc updates from other collaborators
+  useEffect(() => {
+    if (!workspaceId) return;
+
+    const unsubscribe = subscribeToDoc(workspaceId, (newMarkdown) => {
+      setMarkdown((current) => (current === newMarkdown ? current : newMarkdown));
+      setSavedMarkdown(newMarkdown);
+    });
+
+    return unsubscribe;
+  }, [workspaceId]);
 
   const handleSave = useCallback(async () => {
     if (isSaving || markdown === savedMarkdown) return;
