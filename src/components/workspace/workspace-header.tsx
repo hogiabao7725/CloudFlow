@@ -95,7 +95,7 @@ export function WorkspaceHeader({
 
       {/* Right: Presence, Share & AI Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        <WorkspacePresence />
+        <WorkspacePresence workspaceId={workspace.id} />
 
         <Button
           type="button"
